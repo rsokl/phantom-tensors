@@ -51,7 +51,7 @@ func_on_3d(arr_3d)  # static type checker: OK
 func_on_any_arr(arr_3d)  # static type checker: OK
 ```
 
-As well as context-consistent **runtime checks of tensor types and shapes**. E.g.,
+Useful for performing **runtime checks of tensor types and shapes**. E.g.,
 
 ```python
 from phantom_tensors import dim_binding_scope
@@ -93,11 +93,9 @@ z = buggy_matmul(x, y)  # beartype roars!
 z  # static type checker sees: Tensor[A, C]
 ```
 
-This is all achieved using relatively minimal hacks (no mypy plugin necessary, no monkeypatching). 
+This is all achieved using relatively minimal hacks (no mypy plugin necessary, no monkeypatching). Presently, `torch.Tensor` and `numpy.ndarray` are explicitly supported, but it is trivial to add support for other array-like classes.
 
 > Note that mypy does not support PEP 646 yet, but pyright does. You can run pyright on the following examples to see that they do, indeed type-check as expected! 
-
-> Presently, `torch.Tensor` and `numpy.ndarray` are explicitly supported, but it is trivial to add support for other array-like classes.
 
 
 `phantom_tensors.parse` validates inputs against types-with-shapes and performs [type narrowing](https://mypy.readthedocs.io/en/latest/type_narrowing.html) so that static type checkers are privy to the newly proven type information about those inputs. It performs inter-tensor shape consistency checks within a "dimension-binding context". Tensor-likes that are parsed simultaneously are automatically checked within a common dimension-binding context.
