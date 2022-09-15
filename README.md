@@ -29,7 +29,7 @@ As well as context-consistent runtime checks of tensor types and shapes. E.g.,
 from phantom_tensors import dim_binding_scope
 from phantom_tensors.torch import Tensor
 
-from typing import NewType
+from typing import NewType, cast
 from beartype import beartype
 import torch as tr
 
