@@ -3,7 +3,9 @@
 
 This project is currently just a rough prototype!
 
-The goal of this project is to let users write tensor-like types with variadic shapes (via [PEP 646](https://peps.python.org/pep-0646/)) that are amendable to both: static type checking (without a mypy plugin), as well as cross-tensor consistent runtime checking of shapes. This is achieved using relatively minimal hacks (no mypy plugin necessary!). 
+The goal of this project is to let users write tensor-like types with variadic shapes (via [PEP 646](https://peps.python.org/pep-0646/)) that are amendable to both: static type checking (without a mypy plugin), as well as context-consistent runtime compatibility checking of tensor shapes. 
+
+This is all achieved using relatively minimal hacks (no mypy plugin necessary, no monkeypatching). 
 
 > Note that mypy does not support PEP 646 yet, but pyright does. You can run pyright on the following examples to see that they do, indeed type-check as expected! 
 
