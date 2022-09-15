@@ -17,6 +17,8 @@ C = NewType("C", int)
 
 def test_NDArray():
     assert issubclass(NDArray, np.ndarray)
+    assert issubclass(NDArray[A], np.ndarray)
+    
     x = parse(np.ones((2,)), NDArray[A])
     with pytest.raises(ParseError):
         parse(np.ones((2, 3)), NDArray[A, A])
@@ -24,6 +26,8 @@ def test_NDArray():
 
 def test_Tensor():
     assert issubclass(Tensor, tr.Tensor)
+    assert issubclass(Tensor[A], tr.Tensor)
+
     x = parse(tr.ones((2,)), Tensor[A])
     with pytest.raises(ParseError):
         parse(tr.ones((2, 3)), Tensor[A, A])
