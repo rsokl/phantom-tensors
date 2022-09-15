@@ -70,7 +70,7 @@ B = NewType("B", int)
 C = NewType("C", int)
 
 @dim_binding_scope
-@beartype
+@beartype  # <- adds runtime type checking to function's interfaces
 def buggy_matmul(x: Tensor[T1, T2], y: Tensor[T2, T3]) -> Tensor[T1, T3]:
     out = x @ x.T  # <- wrong operation!
     # Will return shape-(A, A) tensor, not (A, C)
