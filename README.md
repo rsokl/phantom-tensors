@@ -87,6 +87,8 @@ One can enter into this context explicitly:
 ```python
 >>> from phantom_tensors import dim_binding_scope
 
+>>> x = parse(np.zeros((2,)), NDArray[B])  # binds B=2
+>>> y = parse(np.zeros((3,)), NDArray[B])  # binds B=3
 >>> with dim_binding_scope:
 ...     x = parse(np.zeros((2,)), NDArray[B])  # binds B=2
 ...     y = parse(np.zeros((3,)), NDArray[B])  # raises!
