@@ -226,35 +226,6 @@ with pytest.raises(Exception):
 
 with pytest.raises(Exception):
     matrix_multiply(x, x)  # <- pyright also raises an error!
-
-# @dim_binding_scope:
-#   ensures A, B, C consistent across all input/output tensor shapes
-#   within scope of function
-@dim_binding_scope 
-@beartype  # <-- adds isinstance checks on inputs & outputs
-def matrix_multiply(x: Tensor[A, B], y: Tensor[B, C]) -> Tensor[A, C]:
-    a, b = x.shape
-    b, c = y.shape
-    return cast(Tensor[A, C], tr.rand(a, c))
-
-@beartype
-def needs_vector(x: Tensor[int]): ...
-
-
-x, y = parse(
-    (tr.rand(3, 4), Tensor[A, B]),
-    (tr.rand(4, 5), Tensor[B, C]),
-)
-
-z = matrix_multiply(x, y)
-z  # type revealed: Tensor[A, C]
-
-with pytest.raises(Exception):
-    # beartype raises error: Tensor[A, C] doesn't match Tensor[A]
-    needs_vector(z)  # <- pyright also raises an error!
-
-with pytest.raises(Exception):
-    matrix_multiply(x, x)  # <- pyright also raises an error!
 ```
 
 
