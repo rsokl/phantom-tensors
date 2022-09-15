@@ -100,13 +100,17 @@ def parse(
 
     for tensor, type_ in tensor_type_pairs:  # type: ignore
         if not isinstance(tensor, type_.__bound__):  # type: ignore
-            raise ParseError(f"Expected Tensor, got: {type(tensor)}")
+            if isinstance(type_.__bound__, tuple):
+                tp, *_ = type_.__bound__
+            else:
+                tp = type_.__bound__
+            raise ParseError(f"Expected {tp}, got: {type(tensor)}")
 
         type_shape = type_._shape  # type: ignore
         if not check(type_shape, tensor.shape):
             assert DimBinder.bindings is not None
             type_str = ", ".join(
-                f"{p.__name__}={DimBinder.bindings.get(p, '???')}" for p in type_shape
+                f"{p.__name__}={DimBinder.bindings.get(p, '?')}" for p in type_shape
             )
             if len(type_shape) == 1:
                 # (A) -> (A,)

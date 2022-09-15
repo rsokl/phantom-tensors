@@ -1,7 +1,9 @@
 from beartype import beartype
 import re
 import torch as tr
+import numpy as np
 from phantom_tensors.torch import Tensor
+from phantom_tensors.numpy import NDArray
 from phantom_tensors import dim_binding_scope, parse
 from phantom_tensors.errors import ParseError
 
@@ -11,6 +13,18 @@ import pytest
 A = NewType("A", int)
 B = NewType("B", int)
 C = NewType("C", int)
+
+
+def test_NDArray():
+    x = parse(np.ones((2,)), NDArray[A])
+    with pytest.raises(ParseError):
+        parse(np.ones((2, 3)), NDArray[A, A])
+
+
+def test_Tensor():
+    x = parse(tr.ones((2,)), Tensor[A])
+    with pytest.raises(ParseError):
+        parse(tr.ones((2, 3)), Tensor[A, A])
 
 
 @pytest.mark.parametrize(
@@ -29,6 +43,25 @@ C = NewType("C", int)
 def test_parse_consistency(tensor_type_pairs):
     with pytest.raises(ParseError):
         parse(*tensor_type_pairs)
+
+
+def test_catches_wrong_instance():
+    with pytest.raises(
+        ParseError,
+        match=re.escape(
+            "Expected <class 'numpy.ndarray'>, got: <class 'torch.Tensor'>"
+        ),
+    ):
+        parse(tr.tensor(1), NDArray[A, B])
+    
+    with pytest.raises(
+        ParseError,
+        match=re.escape(
+            "Expected <class 'torch.Tensor'>, got: <class 'numpy.ndarray'>"
+        ),
+    ):
+        parse(np.array(1), Tensor[A])
+
 
 
 def test_isinstance_works():

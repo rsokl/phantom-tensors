@@ -28,8 +28,8 @@ TESTS_REQUIRE = [
     "hypothesis >= 6.28.0",
 ]
 
-DESCRIPTION = "Configurable, reproducible, and scalable workflows in Python, via Hydra"
-LONG_DESCRIPTION = """The goal of this project is to let users write tensor-like types with variadic shapes that are amendable to both detailed static type checking as well as cross-tensor consistenct runtime type checking of shapes.
+DESCRIPTION = "Tensor types with variadic shapes that support static and runtime type checking"
+LONG_DESCRIPTION = """The goal of this project is to let users write tensor-like types with variadic shapes (PEP 646) that are amendable to both: static type checking (without a mypy plugin), as well as cross-tensor consistent runtime checking of shapes. This is achieved using minimal hacks (no mypy plugin necessary).
 """
 
 
