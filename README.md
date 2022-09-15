@@ -14,10 +14,12 @@ A = NewType("A", int)
 B = NewType("B", int)
 
 def func_on_2d(x: NDArray[A, B]): ...
+def func_on_any_arr(x: np.ndarray): ...
 
 arr_3d = parse(np.ones((3, 5, 3)), NDArray[A, B, A])
 
 func_on_2d(arr_3d)  # static type checker: error
+func_on_any_arr(arr_3d)  # static type checker: OK
 ```
 
 As well as context-consistent runtime checks of tensor shapes. E.g.,
@@ -29,7 +31,6 @@ from phantom_tensors.torch import Tensor
 from typing import NewType
 from beartype import beartype
 import torch as tr
-
 
 
 A = NewType("A", int)
