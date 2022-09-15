@@ -3,7 +3,46 @@
 
 This project is currently just a rough prototype!
 
-The goal of this project is to let users write tensor-like types with variadic shapes (via [PEP 646](https://peps.python.org/pep-0646/)) that are amendable to both: static type checking (without a mypy plugin), as well as context-consistent runtime compatibility checking of tensor shapes. 
+The goal of this project is to let users write tensor-like types with variadic shapes (via [PEP 646](https://peps.python.org/pep-0646/)) that are amendable to both: static type checking (without a mypy plugin). E.g.,
+
+```python
+def func_on_2d(x: Tensor[A, B]): ...
+
+tensor_3d = parse(tr.ones(3, 5, 3), Tensor[A, B, A])
+
+func_on_2d(tensor_3d)  # static type checker: error
+```
+
+As well as context-consistent runtime checks of tensor shapes. E.g.,
+
+```python
+from typing import NewType
+from beartype import beartype
+import torch as tr
+
+from phantom_types.torch import Tensor
+
+
+A = NewType("A", int)
+B = NewType("B", int)
+C = NewType("C", int)
+
+@dim_binding_scope
+@beartype
+def matrix_multiply(x: Tensor[A, B], y: Tensor[B, C]) -> Tensor[A, C]:
+    out = x @ x.T  # <- wrong operation!
+    # Will return shape-(A, A) tensor, not (A, C)
+    return cast(Tensor[A, C], out)
+
+x, y = parse(
+    (tr.ones(3, 4), Tensor[A, B]),
+    (tr.ones(4, 5), Tensor[B, C]),
+)
+x  # static type checker sees: Tensor[A, B]
+y  # static type checker sees: Tensor[B, C]
+
+matrix_multiply(x, y)  # beartype raises due to shape-mismatch of output!
+```
 
 This is all achieved using relatively minimal hacks (no mypy plugin necessary, no monkeypatching). 
 

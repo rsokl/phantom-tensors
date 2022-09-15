@@ -136,6 +136,23 @@ def test_parse_bind_multiple():
 
     parse(tr.ones(78, 22), Tensor[A, B])  # now ok
 
+from beartype.roar import BeartypeCallHintReturnViolation
+def test_matmul_example():
+    @dim_binding_scope
+    @beartype
+    def matrix_multiply(x: Tensor[A, B], y: Tensor[B, C]) -> Tensor[A, C]:
+        out = x @ x.T
+        return cast(Tensor[A, C], out)
+
+    x, y = parse(
+        (tr.ones(3, 4), Tensor[A, B]),
+        (tr.ones(4, 5), Tensor[B, C]),
+    )
+    x  # type revealed: Tensor[A, B]
+    y  # type revealed: Tensor[B, C]
+
+    with pytest.raises(BeartypeCallHintReturnViolation):
+        matrix_multiply(x, y)
 
 def test_runtime_checking_with_beartype():
     @dim_binding_scope
