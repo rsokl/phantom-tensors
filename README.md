@@ -24,8 +24,8 @@ x, y = parse(
     (np.ones((3, 2)), NDArray[B, A]),
 )
 
-x  # static type checker sees: Tensor[A, B]
-y  # static type checker sees: Tensor[B, A]
+x  # static type checker sees: NDArray[A, B]
+y  # static type checker sees: NDArray[B, A]
 ```
 
 Amendable to **static type checking (without mypy plugins)**. E.g.,
@@ -211,7 +211,6 @@ def matrix_multiply(x: Tensor[A, B], y: Tensor[B, C]) -> Tensor[A, C]:
 @beartype
 def needs_vector(x: Tensor[int]): ...
 
-
 x, y = parse(
     (tr.rand(3, 4), Tensor[A, B]),
     (tr.rand(4, 5), Tensor[B, C]),
@@ -221,10 +220,11 @@ z = matrix_multiply(x, y)
 z  # type revealed: Tensor[A, C]
 
 with pytest.raises(Exception):
-    # beartype raises error: Tensor[A, C] doesn't match Tensor[A]
+    # beartype raises error: input Tensor[A, C] doesn't match Tensor[A]
     needs_vector(z)  # <- pyright also raises an error!
 
 with pytest.raises(Exception):
+    # beartype raises error: inputs Tensor[A, B], Tensor[A, B] don't match signature
     matrix_multiply(x, x)  # <- pyright also raises an error!
 ```
 
