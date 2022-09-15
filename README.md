@@ -22,7 +22,6 @@ import torch as tr
 
 from phantom_types.torch import Tensor
 
-
 A = NewType("A", int)
 B = NewType("B", int)
 C = NewType("C", int)
