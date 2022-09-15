@@ -1,5 +1,5 @@
 # Phantom Tensors
-> Tensor types with variadic shapes, for any array-based library, that work with both static type and runtime type checkers
+> Tensor types with variadic shapes, for any array-based library, that work with both static and runtime type checkers
 
 This project is currently just a rough prototype! Inspired by (and uses): [phantom-types](https://github.com/antonagestam/phantom-types)
 
