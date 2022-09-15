@@ -1,7 +1,7 @@
 # Phantom Tensors
 > Tensor types with variadic shapes, for any array-based library, that work with both static type and runtime type checkers
 
-This project is currently just a rough prototype! Inspired by (and uses): https://github.com/antonagestam/phantom-types
+This project is currently just a rough prototype! Inspired by (and uses): [phantom-types](https://github.com/antonagestam/phantom-types)
 
 The goal of this project is to let users write tensor-like types with variadic shapes (via [PEP 646](https://peps.python.org/pep-0646/)) that are amendable to both: static type checking (without a mypy plugin). E.g.,
 
