@@ -6,21 +6,30 @@ This project is currently just a rough prototype!
 The goal of this project is to let users write tensor-like types with variadic shapes (via [PEP 646](https://peps.python.org/pep-0646/)) that are amendable to both: static type checking (without a mypy plugin). E.g.,
 
 ```python
-def func_on_2d(x: Tensor[A, B]): ...
+from phantom_tensors.numpy import NDArray
+import numpy as np
+from typing import NewType
 
-tensor_3d = parse(tr.ones(3, 5, 3), Tensor[A, B, A])
+A = NewType("A", int)
+B = NewType("B", int)
 
-func_on_2d(tensor_3d)  # static type checker: error
+def func_on_2d(x: NDArray[A, B]): ...
+
+arr_3d = parse(np.ones((3, 5, 3)), NDArray[A, B, A])
+
+func_on_2d(arr_3d)  # static type checker: error
 ```
 
 As well as context-consistent runtime checks of tensor shapes. E.g.,
 
 ```python
+from phantom_tensors import dim_binding_scope
+from phantom_tensors.torch import Tensor
+
 from typing import NewType
 from beartype import beartype
 import torch as tr
 
-from phantom_types.torch import Tensor
 
 
 A = NewType("A", int)
@@ -186,3 +195,8 @@ with pytest.raises(Exception):
 - Support some broadcasting?
 - Lock down what people can and can't pass to Tensor[<>]. E.g. Tensor[int, int] is OK. Tensor[str] is not.
 - Make things thread safe
+
+
+## Installation
+
+Clone and pip-install. See `setup.py` for requirments
