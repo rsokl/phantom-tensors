@@ -6,6 +6,7 @@ This project is currently just a rough prototype! Inspired by (and uses): [phant
 The goal of this project is to let users write tensor-like types with variadic shapes (via [PEP 646](https://peps.python.org/pep-0646/)) that are amendable to both: static type checking (without a mypy plugin). E.g.,
 
 ```python
+from phantom_tensor import parse
 from phantom_tensors.numpy import NDArray
 import numpy as np
 from typing import NewType
