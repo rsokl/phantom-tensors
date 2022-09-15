@@ -1,11 +1,12 @@
 # Phantom Tensors
-> Tensor types with variadic shapes, for any array-based library, that work with both static type and runtime type checkers
+> Tensor types with variadic shapes, for any array-based library, that work with both static and runtime type checkers
 
-This project is currently just a rough prototype!
+This project is currently just a rough prototype! Inspired by (and uses): [phantom-types](https://github.com/antonagestam/phantom-types)
 
 The goal of this project is to let users write tensor-like types with variadic shapes (via [PEP 646](https://peps.python.org/pep-0646/)) that are amendable to both: static type checking (without a mypy plugin). E.g.,
 
 ```python
+from phantom_tensors import parse
 from phantom_tensors.numpy import NDArray
 import numpy as np
 from typing import NewType
@@ -28,7 +29,7 @@ As well as context-consistent runtime checks of tensor types and shapes. E.g.,
 from phantom_tensors import dim_binding_scope
 from phantom_tensors.torch import Tensor
 
-from typing import NewType
+from typing import NewType, cast
 from beartype import beartype
 import torch as tr
 
@@ -159,6 +160,36 @@ Thanks to the ability bind dimensions within a specified context, all `beartype`
 ```python
 from phantom_tensors import dim_binding_scope
 from beartype import beartype
+from typing import cast
+
+# @dim_binding_scope:
+#   ensures A, B, C consistent across all input/output tensor shapes
+#   within scope of function
+@dim_binding_scope 
+@beartype  # <-- adds isinstance checks on inputs & outputs
+def matrix_multiply(x: Tensor[A, B], y: Tensor[B, C]) -> Tensor[A, C]:
+    a, b = x.shape
+    b, c = y.shape
+    return cast(Tensor[A, C], tr.rand(a, c))
+
+@beartype
+def needs_vector(x: Tensor[int]): ...
+
+
+x, y = parse(
+    (tr.rand(3, 4), Tensor[A, B]),
+    (tr.rand(4, 5), Tensor[B, C]),
+)
+
+z = matrix_multiply(x, y)
+z  # type revealed: Tensor[A, C]
+
+with pytest.raises(Exception):
+    # beartype raises error: Tensor[A, C] doesn't match Tensor[A]
+    needs_vector(z)  # <- pyright also raises an error!
+
+with pytest.raises(Exception):
+    matrix_multiply(x, x)  # <- pyright also raises an error!
 
 # @dim_binding_scope:
 #   ensures A, B, C consistent across all input/output tensor shapes
