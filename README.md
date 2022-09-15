@@ -22,7 +22,7 @@ func_on_2d(arr_3d)  # static type checker: error
 func_on_any_arr(arr_3d)  # static type checker: OK
 ```
 
-As well as context-consistent runtime checks of tensor shapes. E.g.,
+As well as context-consistent runtime checks of tensor types and shapes. E.g.,
 
 ```python
 from phantom_tensors import dim_binding_scope
@@ -83,7 +83,7 @@ t1, arr, t2 = parse(
     (tr.rand(9, 2, 9), Tensor[B, A, B]),  # <-binds A=2 & B=9
     (np.ones((2,)), NDArray[A]),  # <- checks A==2
     (tr.rand(9), Tensor[B]),  # <- checks B==9
-);  # <- exit dimension-binding scope 
+)  # <- exit dimension-binding scope 
     #    and statically casts x,y,z to shape-typed Tensors
 
 # static type checkers now see
@@ -91,7 +91,7 @@ t1, arr, t2 = parse(
 # arr: NDArray[A]
 # t2: Tensor[B]
 
-w = parse(tr.rand(78), Tensor[A]);  # <- binds A=78
+w = parse(tr.rand(78), Tensor[A]);  # <- binds A=78 within this context
 ```
 
 As indicated above, the type-checker sees the shaped-tensor/array types. Additionally, these are subclasses of their rightful parents, so we can pass these to functions typed with vanilla `torch.Tensor` and `numpy.ndarry` annotations, and type checkers will be a-ok with that.
