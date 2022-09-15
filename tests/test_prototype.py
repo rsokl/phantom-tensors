@@ -30,6 +30,7 @@ def test_Tensor():
 @pytest.mark.parametrize(
     "tensor_type_pairs",
     [
+        (tr.ones(2), Tensor[int, int]),
         (tr.ones(2, 4), Tensor[A, A]),
         (tr.ones(2, 1, 1), Tensor[A, B, A]),
         (tr.ones(1), Tensor[A, B, C]),
