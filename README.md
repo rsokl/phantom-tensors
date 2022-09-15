@@ -3,7 +3,32 @@
 
 This project is currently just a rough prototype! Inspired by (and uses): [phantom-types](https://github.com/antonagestam/phantom-types)
 
-The goal of this project is to let users write tensor-like types with variadic shapes (via [PEP 646](https://peps.python.org/pep-0646/)) that are amendable to both: static type checking (without a mypy plugin). E.g.,
+The goal of this project is to let users write tensor-like types with variadic shapes (via [PEP 646](https://peps.python.org/pep-0646/)) that are: 
+
+Easy for users to use to **perform parsing (i.e. validation and type-narrowing)**:
+
+```python
+from phantom_tensors import parse
+from phantom_tensors.numpy import NDArray
+
+import numpy as np
+from typing import NewType
+
+A = NewType("A", int)
+B = NewType("B", int)
+
+# runtime: checks that shapes (2, 3) and (3, 2)
+#          match (A, B) and (B, A) pattern
+x, y = parse(
+    (np.ones((2, 3)), NDArray[A, B]),
+    (np.ones((3, 2)), NDArray[B, A]),
+)
+
+x  # static type checker sees: Tensor[A, B]
+y  # static type checker sees: Tensor[B, A]
+```
+
+Amendable to **static type checking (without mypy plugins)**. E.g.,
 
 ```python
 from phantom_tensors import parse
@@ -14,25 +39,31 @@ from typing import NewType
 A = NewType("A", int)
 B = NewType("B", int)
 
-def func_on_2d(x: NDArray[A, B]): ...
+def func_on_2d(x: NDArray[int, int]): ...
+def func_on_3d(x: NDArray[int, int, int]): ...
 def func_on_any_arr(x: np.ndarray): ...
 
+# runtime: ensures shape of arr_3d matches (A, B, A) patterns
 arr_3d = parse(np.ones((3, 5, 3)), NDArray[A, B, A])
 
 func_on_2d(arr_3d)  # static type checker: error
+func_on_3d(arr_3d)  # static type checker: OK
 func_on_any_arr(arr_3d)  # static type checker: OK
 ```
 
-As well as context-consistent runtime checks of tensor types and shapes. E.g.,
+As well as context-consistent **runtime checks of tensor types and shapes**. E.g.,
 
 ```python
 from phantom_tensors import dim_binding_scope
 from phantom_tensors.torch import Tensor
 
-from typing import NewType, cast
+from typing import NewType, cast, TypeVar
 from beartype import beartype
 import torch as tr
 
+T1 = TypeVar("T1")
+T2 = TypeVar("T2")
+T3 = TypeVar("T3")
 
 A = NewType("A", int)
 B = NewType("B", int)
@@ -40,10 +71,11 @@ C = NewType("C", int)
 
 @dim_binding_scope
 @beartype
-def matrix_multiply(x: Tensor[A, B], y: Tensor[B, C]) -> Tensor[A, C]:
+def buggy_matmul(x: Tensor[T1, T2], y: Tensor[T2, T3]) -> Tensor[T1, T3]:
     out = x @ x.T  # <- wrong operation!
     # Will return shape-(A, A) tensor, not (A, C)
-    return cast(Tensor[A, C], out)
+    # (and we lie to the static type checker to try to get away with it)
+    return cast(Tensor[T1, T3], out)
 
 x, y = parse(
     (tr.ones(3, 4), Tensor[A, B]),
@@ -52,7 +84,13 @@ x, y = parse(
 x  # static type checker sees: Tensor[A, B]
 y  # static type checker sees: Tensor[B, C]
 
-matrix_multiply(x, y)  # beartype raises due to shape-mismatch of output!
+# At runtime: 
+# beartype raises and catches shape-mismatch of output.
+# Function should return shape-(A, C) but, at runtime, returns
+# shape-(A, A)
+z = buggy_matmul(x, y)  # beartype roars!
+
+z  # static type checker sees: Tensor[A, C]
 ```
 
 This is all achieved using relatively minimal hacks (no mypy plugin necessary, no monkeypatching). 
@@ -62,7 +100,7 @@ This is all achieved using relatively minimal hacks (no mypy plugin necessary, n
 > Presently, `torch.Tensor` and `numpy.ndarray` are explicitly supported, but it is trivial to add support for other array-like classes.
 
 
-`phantom_tensors.parse` validates inputs against types-with-shapes and performs [type narrowing](https://mypy.readthedocs.io/en/latest/type_narrowing.html) so that static type checkers are privy to the newly proven type information about those inputs.
+`phantom_tensors.parse` validates inputs against types-with-shapes and performs [type narrowing](https://mypy.readthedocs.io/en/latest/type_narrowing.html) so that static type checkers are privy to the newly proven type information about those inputs. It performs inter-tensor shape consistency checks within a "dimension-binding context". Tensor-likes that are parsed simultaneously are automatically checked within a common dimension-binding context.
 
 
 ```python
@@ -80,12 +118,12 @@ C = NewType("C", int)
 
 
 t1, arr, t2 = parse(
-    # <- enter dimension-binding context
+    # <- Runtime: enter dimension-binding context
     (tr.rand(9, 2, 9), Tensor[B, A, B]),  # <-binds A=2 & B=9
     (np.ones((2,)), NDArray[A]),  # <- checks A==2
     (tr.rand(9), Tensor[B]),  # <- checks B==9
-)  # <- exit dimension-binding scope 
-    #    and statically casts x,y,z to shape-typed Tensors
+)  # <- Runtime: exit dimension-binding scope 
+   #    Statically: casts t1, arr, t2 to shape-typed Tensors
 
 # static type checkers now see
 # t1: Tensor[B, A, B] 
@@ -134,7 +172,7 @@ ParseError: shape-(1, 2) doesn't match shape-type (A=1, A=1)
 ParseError: shape-(4, 1) doesn't match shape-type (B=2, A=1)
 ```
 
-As indicated above, `parse` is able to compare shapes across multiple tensors by entering into a "dimension-binding scope".
+To reiterate, `parse` is able to compare shapes across multiple tensors by entering into a "dimension-binding scope".
 One can enter into this context explicitly:
 
 ```python

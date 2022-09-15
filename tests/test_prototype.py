@@ -81,7 +81,7 @@ def test_type_var():
     
     non_sqr = parse(tr.ones(2, 3), Tensor[A, B])
     with pytest.raises(BeartypeCallHintParamViolation):
-        diag(non_sqr)
+        diag(non_sqr)  # type: ignore
 
 def test_catches_wrong_instance():
     with pytest.raises(
