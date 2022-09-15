@@ -1,4 +1,5 @@
 from beartype import beartype
+from beartype.roar import BeartypeCallHintParamViolation
 import re
 import torch as tr
 import numpy as np
@@ -7,8 +8,10 @@ from phantom_tensors.numpy import NDArray
 from phantom_tensors import dim_binding_scope, parse
 from phantom_tensors.errors import ParseError
 
-from typing import NewType, cast
+from typing import NewType, cast, TypeVar
 import pytest
+
+T = TypeVar("T")
 
 A = NewType("A", int)
 B = NewType("B", int)
@@ -36,6 +39,25 @@ def test_Tensor():
 @pytest.mark.parametrize(
     "tensor_type_pairs",
     [
+        (tr.ones(2), Tensor[A]),
+        (tr.ones(2, 2), Tensor[A, A]),
+        (tr.ones(1, 2, 3), Tensor[int, int, int]),
+        (tr.ones(2, 1, 2), Tensor[A, B, A]),
+        (tr.ones(2, 1, 3), Tensor[A, B, C]),
+        (
+            (tr.ones(5), Tensor[A]),
+            (tr.ones(5, 2), Tensor[A, B]),
+        ),
+    ],
+)
+def test_parse_consistent_types(tensor_type_pairs):
+    parse(*tensor_type_pairs)
+
+@pytest.mark.parametrize(
+    "tensor_type_pairs",
+    [
+        (tr.ones(2), NDArray[int]),
+        (np.ones((2,)), Tensor[int]),
         (tr.ones(2), Tensor[int, int]),
         (tr.ones(2, 4), Tensor[A, A]),
         (tr.ones(2, 1, 1), Tensor[A, B, A]),
@@ -47,10 +69,19 @@ def test_Tensor():
         ),
     ],
 )
-def test_parse_consistency(tensor_type_pairs):
+def test_parse_inconsistent_types(tensor_type_pairs):
     with pytest.raises(ParseError):
         parse(*tensor_type_pairs)
 
+def test_type_var():
+    @dim_binding_scope
+    @beartype
+    def diag(sqr: Tensor[T, T]) -> Tensor[T]:
+        return cast(Tensor[T], tr.diag(sqr))
+    
+    non_sqr = parse(tr.ones(2, 3), Tensor[A, B])
+    with pytest.raises(BeartypeCallHintParamViolation):
+        diag(non_sqr)
 
 def test_catches_wrong_instance():
     with pytest.raises(

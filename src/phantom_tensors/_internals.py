@@ -49,6 +49,9 @@ def check(shape_type: tuple[Hashable, ...], shape: tuple[int, ...]) -> bool:
     # E.g. Tensor[A, B, B, C] :: matches == {A: [0], B: [1, 2], C: [3]}
     matches: defaultdict[Any, list[int]] = defaultdict(list)
     for n, a in enumerate(shape_type):
+        if a is int:
+            # E.g. Tensor[int, int]: no constraints on shape
+            continue
         matches[a].append(n)
 
     for symbol, indices in matches.items():
