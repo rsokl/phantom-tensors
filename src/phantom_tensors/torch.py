@@ -8,8 +8,10 @@ except ImportError:
 from typing import TYPE_CHECKING, Generic
 
 import typing_extensions as _te
+
 from phantom import Phantom as _Phantom
 from phantom import PhantomMeta as _PhantomMeta
+
 from ._internals import check
 
 __all__ = ["Tensor"]
@@ -31,9 +33,12 @@ class Tensor(Generic[_te.Unpack[Shape]], _Tensor):
             if not isinstance(key, tuple):
                 key = (key,)
 
-            kk = tuple(k.__name__ for k in key)
-            if kk in cls._cache:
-                return cls._cache[kk]
+            try:
+                kk = tuple(k.__name__ for k in key)
+                if kk in cls._cache:
+                    return cls._cache[kk]
+            except AttributeError:
+                kk = None
 
             class PhantomTensor(
                 _Tensor,
@@ -43,7 +48,8 @@ class Tensor(Generic[_te.Unpack[Shape]], _Tensor):
             ):
                 _shape = key
 
-            cls._cache[kk] = PhantomTensor
+            if kk is not None:
+                cls._cache[kk] = PhantomTensor
             return PhantomTensor
 
     @property

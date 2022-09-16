@@ -1,21 +1,17 @@
 from __future__ import annotations
+
 from collections import defaultdict
-
-from typing import (
-    Any,
-    cast,
-    Hashable,
-    Optional,
-    Callable,
-    TypeVar,
-)
-
 from functools import wraps
+from typing import Any, Callable, Hashable, Optional, TypeVar, cast
 
-F = TypeVar('F', bound=Callable[..., Any])
+from typing_extensions import Unpack
+
+F = TypeVar("F", bound=Callable[..., Any])
+
 
 class DimBinder:
     bindings: Optional[dict[Any, int]] = None
+
 
 class DimBindContext:
     _depth: int = 0
@@ -38,21 +34,36 @@ class DimBindContext:
 
         return cast(F, wrapper)
 
+
 dim_binding_scope = DimBindContext()
 
 
 def check(shape_type: tuple[Hashable, ...], shape: tuple[int, ...]) -> bool:
 
-    if len(shape_type) != len(shape):  # TODO: permit arbitrary len-shape
-        return False
-
     # E.g. Tensor[A, B, B, C] :: matches == {A: [0], B: [1, 2], C: [3]}
     matches: defaultdict[Any, list[int]] = defaultdict(list)
+    var_field_ind: Optional[int] = None  # contains *Ts
+
     for n, a in enumerate(shape_type):
         if a is int:
             # E.g. Tensor[int, int]: no constraints on shape
             continue
-        matches[a].append(n)
+        elif getattr(a, "__origin__", None) is Unpack:
+            if var_field_ind is not None:
+                assert False  # duplicate vartuple not allowed!
+            var_field_ind = n
+        elif getattr(a, "__supertype__", None) is int or isinstance(a, TypeVar):
+            # note TypeVarTuple is instance of TypeVar, need to check it first
+            matches[a].append(n if var_field_ind is None else n - len(shape_type))
+        else:
+            assert False
+
+    if var_field_ind is None and len(shape_type) != len(shape):
+        return False
+
+    if var_field_ind is not None:
+        if len(shape) < len(shape_type) - 1:
+            return False
 
     for symbol, indices in matches.items():
         if len(indices) == 1 and DimBinder.bindings is None:
@@ -69,5 +80,3 @@ def check(shape_type: tuple[Hashable, ...], shape: tuple[int, ...]) -> bool:
         if not all(a == shape[b] for b in rest):
             return False
     return True
-        
-        

@@ -9,10 +9,11 @@ from phantom_tensors import dim_binding_scope, parse
 from phantom_tensors.errors import ParseError
 
 from typing import NewType, cast, TypeVar
+from typing_extensions import TypeVarTuple, Unpack as U
 import pytest
 
 T = TypeVar("T")
-
+Ts = TypeVarTuple("Ts")
 A = NewType("A", int)
 B = NewType("B", int)
 C = NewType("C", int)
@@ -35,12 +36,32 @@ def test_Tensor():
     with pytest.raises(ParseError):
         parse(tr.ones((2, 3)), Tensor[A, A])
 
+def test_parse_error_msg():
+    with pytest.raises(
+        ParseError,
+        match=re.escape(
+            "shape-(2, 1) doesn't match shape-type ([...], A=2, A=2)"
+        ),
+    ):
+        parse(np.ones((2, 1)), NDArray[U[Ts], A, A])
 
 @pytest.mark.parametrize(
     "tensor_type_pairs",
     [
+        (tr.ones(()), Tensor[()]),
+        (tr.ones(()), Tensor[U[Ts]]),
         (tr.ones(2), Tensor[A]),
+        (tr.ones(2), Tensor[U[Ts]]),
+        (tr.ones(2), Tensor[U[Ts], A]),
+        (tr.ones(2), Tensor[A, U[Ts]]),
         (tr.ones(2, 2), Tensor[A, A]),
+        (tr.ones(2, 2), Tensor[U[Ts], A, A]),
+        (tr.ones(2, 2), Tensor[A, U[Ts], A]),
+        (tr.ones(2, 2), Tensor[A, A, U[Ts]]),
+        (tr.ones(1, 3, 2, 2), Tensor[U[Ts], A, A]),
+        (tr.ones(2, 1, 3, 2), Tensor[A, U[Ts], A]),
+        (tr.ones(2, 2, 1, 3), Tensor[A, A, U[Ts]]),
+        (tr.ones(1, 2, 1, 3, 2), Tensor[A, B, U[Ts], B]),
         (tr.ones(1, 2, 3), Tensor[int, int, int]),
         (tr.ones(2, 1, 2), Tensor[A, B, A]),
         (tr.ones(2, 1, 3), Tensor[A, B, C]),
@@ -56,11 +77,14 @@ def test_parse_consistent_types(tensor_type_pairs):
 @pytest.mark.parametrize(
     "tensor_type_pairs",
     [
-        (tr.ones(2), NDArray[int]),
-        (np.ones((2,)), Tensor[int]),
+        (tr.ones(2), NDArray[int]),  # type mismatch
+        (np.ones((2,)), Tensor[int]),  # type mismatch
+        (tr.ones(()), Tensor[int]),
+        (tr.ones(()), Tensor[int, U[Ts]]),
         (tr.ones(2), Tensor[int, int]),
         (tr.ones(2, 4), Tensor[A, A]),
         (tr.ones(2, 1, 1), Tensor[A, B, A]),
+        (tr.ones(2, 1, 1), Tensor[A, U[Ts], A]),
         (tr.ones(1), Tensor[A, B, C]),
         ((tr.ones(2, 4), Tensor[A, A]),),
         (

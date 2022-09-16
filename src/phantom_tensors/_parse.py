@@ -2,15 +2,19 @@ from __future__ import annotations
 
 from typing import Type, TypeVar, overload
 
-from typing_extensions import Protocol
+from typing_extensions import Protocol, TypeVarTuple, Unpack
 
 from ._internals import DimBinder, check, dim_binding_scope
 from .errors import ParseError
 
-class HasShape(Protocol):
+Ts = TypeVarTuple("Ts")
+
+
+class HasShape(Protocol[Unpack[Ts]]):
     @property
-    def shape(self) -> tuple[int, ...]:
+    def shape(self) -> tuple[Unpack[Ts]]:
         ...
+
 
 T1 = TypeVar("T1", bound=HasShape)
 T2 = TypeVar("T2", bound=HasShape)
@@ -31,6 +35,7 @@ def parse(
 ) -> tuple[T1, T2, T3, T4, T5, T6]:
     ...
 
+
 @overload
 def parse(
     __a: tuple[HasShape, Type[T1]],
@@ -40,6 +45,7 @@ def parse(
     __e: tuple[HasShape, Type[T5]],
 ) -> tuple[T1, T2, T3, T4, T5]:
     ...
+
 
 @overload
 def parse(
@@ -110,7 +116,12 @@ def parse(
         if not check(type_shape, tensor.shape):
             assert DimBinder.bindings is not None
             type_str = ", ".join(
-                f"{p.__name__}={DimBinder.bindings.get(p, '?')}" for p in type_shape
+                (
+                    f"{getattr(p, '__name__', repr(p))}={DimBinder.bindings.get(p, '?')}"
+                    if getattr(p, "__origin__", None) is not Unpack
+                    else "[...]"
+                )
+                for p in type_shape
             )
             if len(type_shape) == 1:
                 # (A) -> (A,)
