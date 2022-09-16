@@ -24,8 +24,8 @@ x, y = parse(
     (np.ones((3, 2)), NDArray[B, A]),
 )
 
-x  # static type checker sees: Tensor[A, B]
-y  # static type checker sees: Tensor[B, A]
+x  # static type checker sees: NDArray[A, B]
+y  # static type checker sees: NDArray[B, A]
 ```
 
 Amendable to **static type checking (without mypy plugins)**. E.g.,
@@ -51,7 +51,7 @@ func_on_3d(arr_3d)  # static type checker: OK
 func_on_any_arr(arr_3d)  # static type checker: OK
 ```
 
-As well as context-consistent **runtime checks of tensor types and shapes**. E.g.,
+Useful for performing **runtime checks of tensor types and shapes**. E.g.,
 
 ```python
 from phantom_tensors import dim_binding_scope
@@ -70,7 +70,7 @@ B = NewType("B", int)
 C = NewType("C", int)
 
 @dim_binding_scope
-@beartype
+@beartype  # <- adds runtime type checking to function's interfaces
 def buggy_matmul(x: Tensor[T1, T2], y: Tensor[T2, T3]) -> Tensor[T1, T3]:
     out = x @ x.T  # <- wrong operation!
     # Will return shape-(A, A) tensor, not (A, C)
@@ -93,11 +93,9 @@ z = buggy_matmul(x, y)  # beartype roars!
 z  # static type checker sees: Tensor[A, C]
 ```
 
-This is all achieved using relatively minimal hacks (no mypy plugin necessary, no monkeypatching). 
+This is all achieved using relatively minimal hacks (no mypy plugin necessary, no monkeypatching). Presently, `torch.Tensor` and `numpy.ndarray` are explicitly supported, but it is trivial to add support for other array-like classes.
 
 > Note that mypy does not support PEP 646 yet, but pyright does. You can run pyright on the following examples to see that they do, indeed type-check as expected! 
-
-> Presently, `torch.Tensor` and `numpy.ndarray` are explicitly supported, but it is trivial to add support for other array-like classes.
 
 
 `phantom_tensors.parse` validates inputs against types-with-shapes and performs [type narrowing](https://mypy.readthedocs.io/en/latest/type_narrowing.html) so that static type checkers are privy to the newly proven type information about those inputs. It performs inter-tensor shape consistency checks within a "dimension-binding context". Tensor-likes that are parsed simultaneously are automatically checked within a common dimension-binding context.
@@ -213,7 +211,6 @@ def matrix_multiply(x: Tensor[A, B], y: Tensor[B, C]) -> Tensor[A, C]:
 @beartype
 def needs_vector(x: Tensor[int]): ...
 
-
 x, y = parse(
     (tr.rand(3, 4), Tensor[A, B]),
     (tr.rand(4, 5), Tensor[B, C]),
@@ -223,39 +220,11 @@ z = matrix_multiply(x, y)
 z  # type revealed: Tensor[A, C]
 
 with pytest.raises(Exception):
-    # beartype raises error: Tensor[A, C] doesn't match Tensor[A]
+    # beartype raises error: input Tensor[A, C] doesn't match Tensor[A]
     needs_vector(z)  # <- pyright also raises an error!
 
 with pytest.raises(Exception):
-    matrix_multiply(x, x)  # <- pyright also raises an error!
-
-# @dim_binding_scope:
-#   ensures A, B, C consistent across all input/output tensor shapes
-#   within scope of function
-@dim_binding_scope 
-@beartype  # <-- adds isinstance checks on inputs & outputs
-def matrix_multiply(x: Tensor[A, B], y: Tensor[B, C]) -> Tensor[A, C]:
-    a, b = x.shape
-    b, c = y.shape
-    return cast(Tensor[A, C], tr.rand(a, c))
-
-@beartype
-def needs_vector(x: Tensor[int]): ...
-
-
-x, y = parse(
-    (tr.rand(3, 4), Tensor[A, B]),
-    (tr.rand(4, 5), Tensor[B, C]),
-)
-
-z = matrix_multiply(x, y)
-z  # type revealed: Tensor[A, C]
-
-with pytest.raises(Exception):
-    # beartype raises error: Tensor[A, C] doesn't match Tensor[A]
-    needs_vector(z)  # <- pyright also raises an error!
-
-with pytest.raises(Exception):
+    # beartype raises error: inputs Tensor[A, B], Tensor[A, B] don't match signature
     matrix_multiply(x, x)  # <- pyright also raises an error!
 ```
 
@@ -269,4 +238,4 @@ with pytest.raises(Exception):
 
 ## Installation
 
-Clone and pip-install. See `setup.py` for requirments
+Clone and pip-install. See `setup.py` for requirements
