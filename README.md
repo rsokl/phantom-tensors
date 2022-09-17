@@ -55,9 +55,13 @@ Useful for performing **runtime checks of tensor types and shapes**. E.g.,
 
 ```python
 from phantom_tensors import dim_binding_scope
+
+# These are just convenient NewType(..., int) definitions
+from phantom_tensors.alphabet import A, B, C
+
 from phantom_tensors.torch import Tensor
 
-from typing import NewType, cast, TypeVar
+from typing import cast, TypeVar
 from beartype import beartype
 import torch as tr
 
@@ -65,9 +69,6 @@ T1 = TypeVar("T1")
 T2 = TypeVar("T2")
 T3 = TypeVar("T3")
 
-A = NewType("A", int)
-B = NewType("B", int)
-C = NewType("C", int)
 
 @dim_binding_scope
 @beartype  # <- adds runtime type checking to function's interfaces
@@ -103,17 +104,12 @@ This is all achieved using relatively minimal hacks (no mypy plugin necessary, n
 
 ```python
 from phantom_tensors import parse
+from phantom_tensors.alphabet import A, B, C
 from phantom_tensors.torch import Tensor
 from phantom_tensors.numpy import NDArray
 
 import torch as tr
 import numpy as np
-
-from typing import NewType
-A = NewType("A", int)
-B = NewType("B", int)
-C = NewType("C", int)
-
 
 t1, arr, t2 = parse(
     # <- Runtime: enter dimension-binding context
@@ -228,12 +224,6 @@ with pytest.raises(Exception):
     matrix_multiply(x, x)  # <- pyright also raises an error!
 ```
 
-
-**TODO:**
-- Handle variable-length annotations: Tensor[A, ...]
-- Support some broadcasting?
-- Lock down what people can and can't pass to Tensor[<>]. E.g. Tensor[int, int] is OK. Tensor[str] is not.
-- Make things thread safe
 
 
 ## Installation
