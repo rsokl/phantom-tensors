@@ -9,8 +9,7 @@ from typing import TYPE_CHECKING, Generic
 
 import typing_extensions as _te
 
-from phantom import Phantom as _Phantom
-from phantom import PhantomMeta as _PhantomMeta
+from phantom import Phantom as _Phantom, PhantomMeta as _PhantomMeta
 
 from ._internals import check
 

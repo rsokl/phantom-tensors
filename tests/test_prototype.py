@@ -1,16 +1,20 @@
-from beartype import beartype
-from beartype.roar import BeartypeCallHintParamViolation
 import re
-import torch as tr
+from typing import NewType, TypeVar, cast
+
 import numpy as np
-from phantom_tensors.torch import Tensor
-from phantom_tensors.numpy import NDArray
+import pytest
+import torch as tr
+from beartype import beartype
+from beartype.roar import (
+    BeartypeCallHintParamViolation,
+    BeartypeCallHintReturnViolation,
+)
+from typing_extensions import TypeVarTuple, Unpack as U
+
 from phantom_tensors import dim_binding_scope, parse
 from phantom_tensors.errors import ParseError
-
-from typing import NewType, cast, TypeVar
-from typing_extensions import TypeVarTuple, Unpack as U
-import pytest
+from phantom_tensors.numpy import NDArray
+from phantom_tensors.torch import Tensor
 
 T = TypeVar("T")
 Ts = TypeVarTuple("Ts")
@@ -22,7 +26,7 @@ C = NewType("C", int)
 def test_NDArray():
     assert issubclass(NDArray, np.ndarray)
     assert issubclass(NDArray[A], np.ndarray)
-    
+
     x = parse(np.ones((2,)), NDArray[A])
     with pytest.raises(ParseError):
         parse(np.ones((2, 3)), NDArray[A, A])
@@ -36,14 +40,14 @@ def test_Tensor():
     with pytest.raises(ParseError):
         parse(tr.ones((2, 3)), Tensor[A, A])
 
+
 def test_parse_error_msg():
     with pytest.raises(
         ParseError,
-        match=re.escape(
-            "shape-(2, 1) doesn't match shape-type ([...], A=2, A=2)"
-        ),
+        match=re.escape("shape-(2, 1) doesn't match shape-type ([...], A=2, A=2)"),
     ):
         parse(np.ones((2, 1)), NDArray[U[Ts], A, A])
+
 
 @pytest.mark.parametrize(
     "tensor_type_pairs",
@@ -74,6 +78,7 @@ def test_parse_error_msg():
 def test_parse_consistent_types(tensor_type_pairs):
     parse(*tensor_type_pairs)
 
+
 @pytest.mark.parametrize(
     "tensor_type_pairs",
     [
@@ -97,15 +102,17 @@ def test_parse_inconsistent_types(tensor_type_pairs):
     with pytest.raises(ParseError):
         parse(*tensor_type_pairs)
 
+
 def test_type_var():
     @dim_binding_scope
     @beartype
     def diag(sqr: Tensor[T, T]) -> Tensor[T]:
         return cast(Tensor[T], tr.diag(sqr))
-    
+
     non_sqr = parse(tr.ones(2, 3), Tensor[A, B])
     with pytest.raises(BeartypeCallHintParamViolation):
         diag(non_sqr)  # type: ignore
+
 
 def test_catches_wrong_instance():
     with pytest.raises(
@@ -115,7 +122,7 @@ def test_catches_wrong_instance():
         ),
     ):
         parse(tr.tensor(1), NDArray[A, B])
-    
+
     with pytest.raises(
         ParseError,
         match=re.escape(
@@ -123,7 +130,6 @@ def test_catches_wrong_instance():
         ),
     ):
         parse(np.array(1), Tensor[A])
-
 
 
 def test_isinstance_works():
@@ -197,7 +203,8 @@ def test_parse_bind_multiple():
 
     parse(tr.ones(78, 22), Tensor[A, B])  # now ok
 
-from beartype.roar import BeartypeCallHintReturnViolation
+
+
 def test_matmul_example():
     @dim_binding_scope
     @beartype
@@ -214,6 +221,7 @@ def test_matmul_example():
 
     with pytest.raises(BeartypeCallHintReturnViolation):
         matrix_multiply(x, y)
+
 
 def test_runtime_checking_with_beartype():
     @dim_binding_scope
