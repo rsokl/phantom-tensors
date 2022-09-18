@@ -86,6 +86,7 @@ def test_parse_error_msg():
             (tr.ones(5, 2), Tensor[A, B]),
         ),
         (tr.ones(1), Tensor[L[1]]),
+        (tr.ones(3), Tensor[L[1, 2, 3]]),
         (tr.ones(1, 2), Tensor[L[1], L[2]]),
         (tr.ones(1, 2, 1), Tensor[L[1], L[2], L[1]]),
         (tr.ones(2, 2, 10), Tensor[One_to_Three, int, Ten_or_Eleven]),

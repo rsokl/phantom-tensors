@@ -64,11 +64,11 @@ def check(shape_type: tuple[ShapeDimType, ...], shape: tuple[int, ...]) -> bool:
     # validatated
     # Maybe enable extra strict mode where we do that checking
 
-    # E.g. Tensor[A, B, B, C] :: matches == {A: [0], B: [1, 2], C: [3]}
+    # E.g. Tensor[A, B, B, C] -> matches == {A: [0], B: [1, 2], C: [3]}
     matches: defaultdict[ShapeDimType, list[int]] = defaultdict(list)
 
     # These can be cached globally -- are independent of match pattern
-    # E.g. Tensor[Literal[1]] :: validators {Literal[1]: lambda x: x == 1}
+    # E.g. Tensor[Literal[1]] -> validators {Literal[1]: lambda x: x == 1}
     validators: dict[ShapeDimType, Callable[[Any], bool]] = {}
 
     var_field_ind: Optional[int] = None  # contains *Ts
