@@ -125,3 +125,19 @@ def test_catches_wrong_instance():
         ),
     ):
         parse(np.array(1), Tensor[A])
+
+
+def test_isinstance_works():
+    with dim_binding_scope:
+
+        assert isinstance(tr.ones(2), Tensor[A])  # type: ignore
+        assert not isinstance(tr.ones(3), Tensor[A])  # type: ignore
+        assert isinstance(tr.ones(2), Tensor[A])  # type: ignore
+
+        assert isinstance(tr.ones(2, 4), Tensor[A, B])  # type: ignore
+        assert not isinstance(tr.ones(2), Tensor[B])  # type: ignore
+        assert isinstance(tr.ones(4), Tensor[B])  # type: ignore
+        assert isinstance(tr.ones(4, 2, 2, 4), Tensor[B, A, A, B])  # type: ignore
+
+    assert isinstance(tr.ones(1, 3, 3, 1), Tensor[B, A, A, B])  # type: ignore
+    assert isinstance(tr.ones(1, 4, 4, 1), Tensor[B, A, A, B])  # type: ignore
