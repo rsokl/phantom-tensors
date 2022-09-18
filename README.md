@@ -202,7 +202,7 @@ parse(tr.ones(1, 0, 0, 0, 3), Tensor[L[1], U[Ts], L[3]])  # OK
 parse(tr.ones(3, 0, 0, 0, 3), Tensor[L[1], U[Ts], L[3]])  # ParseError
 ```
 
-Supports phatom type dimensions (i.e. `int` subclasses that overried `__isinstance__` checks):
+Supports phatom type dimensions (i.e. `int` subclasses that override `__isinstance__` checks):
 
 ```python
 from typing_extensions import Unpack as U, TypeVarTuple, Literal as L
