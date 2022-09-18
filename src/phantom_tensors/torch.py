@@ -32,12 +32,12 @@ class Tensor(Generic[_te.Unpack[Shape]], _Tensor):
             if not isinstance(key, tuple):
                 key = (key,)
 
-            try:
-                kk = tuple(k.__name__ for k in key)
-                if kk in cls._cache:
-                    return cls._cache[kk]
-            except AttributeError:
-                kk = None
+            # try:
+            #     kk = tuple(k.__name__ for k in key)
+            #     if kk in cls._cache:
+            #         return cls._cache[kk]
+            # except AttributeError:
+            #     kk = None
 
             class PhantomTensor(
                 _Tensor,
@@ -47,8 +47,8 @@ class Tensor(Generic[_te.Unpack[Shape]], _Tensor):
             ):
                 _shape = key
 
-            if kk is not None:
-                cls._cache[kk] = PhantomTensor
+            # if kk is not None:
+            #     cls._cache[kk] = PhantomTensor
             return PhantomTensor
 
     @property

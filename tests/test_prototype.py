@@ -9,8 +9,9 @@ from beartype.roar import (
     BeartypeCallHintParamViolation,
     BeartypeCallHintReturnViolation,
 )
-from typing_extensions import TypeVarTuple, Unpack as U
+from typing_extensions import Literal as L, TypeVarTuple, Unpack as U
 
+from phantom import Phantom
 from phantom_tensors import dim_binding_scope, parse
 from phantom_tensors.errors import ParseError
 from phantom_tensors.numpy import NDArray
@@ -23,11 +24,22 @@ B = NewType("B", int)
 C = NewType("C", int)
 
 
+class One_to_Three(int, Phantom, predicate=lambda x: 0 < x < 4):
+    ...
+
+
+class Ten_or_Eleven(int, Phantom, predicate=lambda x: 10 <= x <= 11):
+    ...
+
+
+NewOneToThree = NewType("NewOneToThree", One_to_Three)
+
+
 def test_NDArray():
     assert issubclass(NDArray, np.ndarray)
     assert issubclass(NDArray[A], np.ndarray)
 
-    x = parse(np.ones((2,)), NDArray[A])
+    parse(np.ones((2,)), NDArray[A])
     with pytest.raises(ParseError):
         parse(np.ones((2, 3)), NDArray[A, A])
 
@@ -36,7 +48,7 @@ def test_Tensor():
     assert issubclass(Tensor, tr.Tensor)
     assert issubclass(Tensor[A], tr.Tensor)
 
-    x = parse(tr.ones((2,)), Tensor[A])
+    parse(tr.ones((2,)), Tensor[A])
     with pytest.raises(ParseError):
         parse(tr.ones((2, 3)), Tensor[A, A])
 
@@ -73,6 +85,15 @@ def test_parse_error_msg():
             (tr.ones(5), Tensor[A]),
             (tr.ones(5, 2), Tensor[A, B]),
         ),
+        (tr.ones(1), Tensor[L[1]]),
+        (tr.ones(1, 2), Tensor[L[1], L[2]]),
+        (tr.ones(1, 2, 1), Tensor[L[1], L[2], L[1]]),
+        (tr.ones(2, 2, 10), Tensor[One_to_Three, int, Ten_or_Eleven]),
+        (tr.ones(2, 10), Tensor[One_to_Three, U[Ts], Ten_or_Eleven]),
+        (tr.ones(2, 2, 10), Tensor[One_to_Three, U[Ts], Ten_or_Eleven]),
+        (tr.ones(2, 0, 0, 10), Tensor[One_to_Three, U[Ts], Ten_or_Eleven]),
+        (tr.ones(2, 2, 10), Tensor[NewOneToThree, int, Ten_or_Eleven]),
+        (tr.ones(0, 0, 2, 11), Tensor[U[Ts], One_to_Three, Ten_or_Eleven]),
     ],
 )
 def test_parse_consistent_types(tensor_type_pairs):
@@ -96,6 +117,17 @@ def test_parse_consistent_types(tensor_type_pairs):
             (tr.ones(4), Tensor[A]),
             (tr.ones(5), Tensor[A]),
         ),
+        (tr.ones(3), Tensor[L[1]]),
+        (tr.ones(2, 2), Tensor[L[1], L[2]]),
+        (tr.ones(1, 1), Tensor[L[1], L[2]]),
+        (tr.ones(1, 1, 1), Tensor[L[1], L[2], L[1]]),
+        (tr.ones(10, 2, 10), Tensor[One_to_Three, int, Ten_or_Eleven]),
+        (tr.ones(10, 2, 10), Tensor[NewOneToThree, int, Ten_or_Eleven]),
+        (tr.ones(2, 2, 8), Tensor[NewOneToThree, int, Ten_or_Eleven]),
+        (tr.ones(0, 10), Tensor[One_to_Three, U[Ts], Ten_or_Eleven]),
+        (tr.ones(2, 2, 0), Tensor[One_to_Three, U[Ts], Ten_or_Eleven]),
+        (tr.ones(2, 0, 0, 0), Tensor[One_to_Three, U[Ts], Ten_or_Eleven]),
+        (tr.ones(0, 0, 2, 0), Tensor[U[Ts], One_to_Three, Ten_or_Eleven]),
     ],
 )
 def test_parse_inconsistent_types(tensor_type_pairs):
@@ -204,7 +236,6 @@ def test_parse_bind_multiple():
     parse(tr.ones(78, 22), Tensor[A, B])  # now ok
 
 
-
 def test_matmul_example():
     @dim_binding_scope
     @beartype
@@ -252,3 +283,20 @@ def test_runtime_checking_with_beartype():
 
     with pytest.raises(Exception):
         matrix_multiply(x, x)  # type: ignore
+
+
+AStr = NewType("AStr", str)
+
+
+@pytest.mark.parametrize(
+    "bad_type",
+    [
+        Tensor[AStr],
+        Tensor[str],
+        Tensor[int, str],
+        Tensor[U[Ts], str],
+    ],
+)
+def test_bad_type_validation(bad_type):
+    with pytest.raises(TypeError):
+        parse(tr.ones(1), bad_type)

@@ -2,6 +2,19 @@ from typing import Any
 
 from typing_extensions import Literal, Protocol, TypeGuard, TypeVarTuple, Unpack
 
+_Ts = TypeVarTuple("_Ts")
+
+UnpackType = type(Unpack[_Ts])  # type: ignore
+LiteralType = type(Literal[1])
+
+
+class NewTypeLike(Protocol):
+    __name__: str
+    __supertype__: type[Any]
+
+    def __call__(self, x: Any) -> int:
+        ...
+
 
 class NewTypeInt(Protocol):
     __name__: str
@@ -34,6 +47,10 @@ class TupleGeneric(Protocol):
     __args__: tuple[type[Any], ...]
 
 
+def is_newtype(x: Any) -> TypeGuard[NewTypeLike]:
+    return hasattr(x, "__supertype__")
+
+
 def is_newtype_int(x: Any) -> TypeGuard[NewTypeInt]:
     supertype = getattr(x, "__supertype__", None)
     if supertype is None:
@@ -42,7 +59,7 @@ def is_newtype_int(x: Any) -> TypeGuard[NewTypeInt]:
 
 
 def is_typevar_unpack(x: Any) -> TypeGuard[UnpackLike]:
-    return getattr(x, "__origin__", None) is Unpack
+    return isinstance(x, UnpackType)
 
 
 def is_tuple_generic(x: Any) -> TypeGuard[TupleGeneric]:
@@ -50,4 +67,4 @@ def is_tuple_generic(x: Any) -> TypeGuard[TupleGeneric]:
 
 
 def is_literal(x: Any) -> TypeGuard[LiteralLike]:
-    return getattr(x, "__origin__", None) is Literal
+    return isinstance(x, LiteralType)

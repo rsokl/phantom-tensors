@@ -8,11 +8,12 @@ The goal of this project is to let users write tensor-like types with variadic s
 Easy for users to use to **perform parsing (i.e. validation and type-narrowing)**:
 
 ```python
-from phantom_tensors import parse
-from phantom_tensors.numpy import NDArray
+from typing import NewType
 
 import numpy as np
-from typing import NewType
+
+from phantom_tensors import parse
+from phantom_tensors.numpy import NDArray
 
 A = NewType("A", int)
 B = NewType("B", int)
@@ -28,13 +29,16 @@ x  # static type checker sees: NDArray[A, B]
 y  # static type checker sees: NDArray[B, A]
 ```
 
+
 Amendable to **static type checking (without mypy plugins)**. E.g.,
 
 ```python
+from typing import NewType
+
+import numpy as np
+
 from phantom_tensors import parse
 from phantom_tensors.numpy import NDArray
-import numpy as np
-from typing import NewType
 
 A = NewType("A", int)
 B = NewType("B", int)
@@ -54,16 +58,15 @@ func_on_any_arr(arr_3d)  # static type checker: OK
 Useful for performing **runtime checks of tensor types and shapes**. E.g.,
 
 ```python
-from phantom_tensors import dim_binding_scope
+from typing import TypeVar, cast
 
+import torch as tr
+from beartype import beartype
+
+from phantom_tensors import dim_binding_scope
 # These are just convenient NewType(..., int) definitions
 from phantom_tensors.alphabet import A, B, C
-
 from phantom_tensors.torch import Tensor
-
-from typing import cast, TypeVar
-from beartype import beartype
-import torch as tr
 
 T1 = TypeVar("T1")
 T2 = TypeVar("T2")
@@ -103,13 +106,13 @@ This is all achieved using relatively minimal hacks (no mypy plugin necessary, n
 
 
 ```python
+import numpy as np
+import torch as tr
+
 from phantom_tensors import parse
 from phantom_tensors.alphabet import A, B, C
-from phantom_tensors.torch import Tensor
 from phantom_tensors.numpy import NDArray
-
-import torch as tr
-import numpy as np
+from phantom_tensors.torch import Tensor
 
 t1, arr, t2 = parse(
     # <- Runtime: enter dimension-binding context
@@ -181,6 +184,43 @@ One can enter into this context explicitly:
 ParseError: shape-(3,) doesn't match shape-type (B=2,)
 ```
 
+
+Supports `Literal` dimensions and phantom-type dimensions:
+
+```python
+from typing_extensions import Unpack as U, TypeVarTuple, Literal as L
+
+from phantom_tensors import parse
+from phantom_tensors.torch import Tensor
+
+import torch as tr
+from phantom import Phantom
+
+class EvenOnly(int, Phantom, predicate=lambda x: x%2 == 0): ...
+
+parse(tr.ones(1, 0), Tensor[int, EvenOnly])  # static return type: Tensor[int, EvenOnlu] 
+parse(tr.ones(1, 2), Tensor[int, EvenOnly])  # static return type: Tensor[int, EvenOnlu] 
+parse(tr.ones(1, 4), Tensor[int, EvenOnly])  # static return type: Tensor[int, EvenOnlu] 
+
+parse(tr.ones(1, 3), Tensor[int, EvenOnly])  # ParseError
+```
+
+```python
+from phantom_tensors import parse
+from phantom_tensors.torch import Tensor
+
+import torch as tr
+from typing_extensions import Unpack as U, TypeVarTuple, Literal as L
+
+Ts = TypeVarTuple("Ts")
+
+parse(tr.ones(1, 3), Tensor[L[1], U[Ts], L[3]])  # OK
+parse(tr.ones(1, 0, 0, 0, 3), Tensor[L[1], U[Ts], L[3]])  # OK
+
+parse(tr.ones(3, 0, 0, 0, 3), Tensor[L[1], U[Ts], L[3]])  # ParseError
+```
+
+
 ## Compatibility with Runtime Type Checkers
 
 `parse` is not the only way to perform runtime validation using phantom tensors – they work out of the box with 3rd party runtime type checkers like [beartype](https://github.com/beartype/beartype)! How is this possible?
@@ -190,9 +230,12 @@ ParseError: shape-(3,) doesn't match shape-type (B=2,)
 Thanks to the ability bind dimensions within a specified context, all `beartype` needs to do is faithfully call `isinstance(...)` within said context and we can have the inputs and ouputs of a phantom-tensor-annotated function get checked!
 
 ```python
-from phantom_tensors import dim_binding_scope
-from beartype import beartype
 from typing import cast
+
+from beartype import beartype
+
+from phantom_tensors import dim_binding_scope
+
 
 # @dim_binding_scope:
 #   ensures A, B, C consistent across all input/output tensor shapes
