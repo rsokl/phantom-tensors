@@ -185,25 +185,7 @@ ParseError: shape-(3,) doesn't match shape-type (B=2,)
 ```
 
 
-Supports `Literal` dimensions and phantom-type dimensions:
-
-```python
-from typing_extensions import Unpack as U, TypeVarTuple, Literal as L
-
-from phantom_tensors import parse
-from phantom_tensors.torch import Tensor
-
-import torch as tr
-from phantom import Phantom
-
-class EvenOnly(int, Phantom, predicate=lambda x: x%2 == 0): ...
-
-parse(tr.ones(1, 0), Tensor[int, EvenOnly])  # static return type: Tensor[int, EvenOnlu] 
-parse(tr.ones(1, 2), Tensor[int, EvenOnly])  # static return type: Tensor[int, EvenOnlu] 
-parse(tr.ones(1, 4), Tensor[int, EvenOnly])  # static return type: Tensor[int, EvenOnlu] 
-
-parse(tr.ones(1, 3), Tensor[int, EvenOnly])  # ParseError
-```
+Supports `Literal` dimensions and variadic shapes:
 
 ```python
 from phantom_tensors import parse
@@ -219,6 +201,27 @@ parse(tr.ones(1, 0, 0, 0, 3), Tensor[L[1], U[Ts], L[3]])  # OK
 
 parse(tr.ones(3, 0, 0, 0, 3), Tensor[L[1], U[Ts], L[3]])  # ParseError
 ```
+
+Supports phatom type dimensions (i.e. `int` subclasses that overried `__isinstance__` checks):
+
+```python
+from typing_extensions import Unpack as U, TypeVarTuple, Literal as L
+
+from phantom_tensors import parse
+from phantom_tensors.torch import Tensor
+
+import torch as tr
+from phantom import Phantom
+
+class EvenOnly(int, Phantom, predicate=lambda x: x%2 == 0): ...
+
+parse(tr.ones(1, 0), Tensor[int, EvenOnly])  # static return type: Tensor[int, EvenOnly] 
+parse(tr.ones(1, 2), Tensor[int, EvenOnly])  # static return type: Tensor[int, EvenOnly] 
+parse(tr.ones(1, 4), Tensor[int, EvenOnly])  # static return type: Tensor[int, EvenOnly] 
+
+parse(tr.ones(1, 3), Tensor[int, EvenOnly])  # ParseError
+```
+
 
 
 ## Compatibility with Runtime Type Checkers
