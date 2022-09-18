@@ -1,11 +1,78 @@
 from __future__ import annotations
 
+from typing import Tuple as tuple
+
 import torch as tr
 from typing_extensions import assert_type
 
 from phantom_tensors import parse
 from phantom_tensors.alphabet import A, B
 from phantom_tensors.torch import Tensor
+
+
+def parse_tensors(x: tr.Tensor):
+    assert_type(parse(x, Tensor[A]), Tensor[A])
+    assert_type(parse((x, Tensor[A])), Tensor[A])
+    assert_type(
+        parse(
+            (x, Tensor[A]),
+            (x, Tensor[A, B]),
+        ),
+        tuple[Tensor[A], Tensor[A, B]],
+    )
+    assert_type(
+        parse(
+            (x, Tensor[A]),
+            (x, Tensor[A, B]),
+            (x, Tensor[B, A]),
+        ),
+        tuple[Tensor[A], Tensor[A, B], Tensor[B, A]],
+    )
+
+    assert_type(
+        parse(
+            (x, Tensor[A]),
+            (x, Tensor[A, B]),
+            (x, Tensor[B, A]),
+            (x, Tensor[B, B]),
+        ),
+        tuple[Tensor[A], Tensor[A, B], Tensor[B, A], Tensor[B, B]],
+    )
+
+    assert_type(
+        parse(
+            (x, Tensor[A]),
+            (x, Tensor[A, B]),
+            (x, Tensor[B, A]),
+            (x, Tensor[B, B]),
+            (x, Tensor[B]),
+        ),
+        tuple[Tensor[A], Tensor[A, B], Tensor[B, A], Tensor[B, B], Tensor[B]],
+    )
+
+    assert_type(
+        parse(
+            (x, Tensor[A]),
+            (x, Tensor[A, B]),
+            (x, Tensor[B, A]),
+            (x, Tensor[B, B]),
+            (x, Tensor[B]),
+            (x, Tensor[A]),
+        ),
+        tuple[
+            Tensor[A], Tensor[A, B], Tensor[B, A], Tensor[B, B], Tensor[B], Tensor[A]
+        ],
+    )
+
+
+def check_bad_tensor_parse(x: tr.Tensor):
+    parse(1, tuple[A])  # type: ignore
+    parse((1,), A)  # type: ignore
+
+    parse(x, A)  # type: ignore
+    parse((x, A))  # type: ignore
+    parse((x, A), (x, tuple[A]))  # type: ignore
+
 
 # def check_parse_ints(x: int | Literal[1]):
 #     assert_type(
@@ -128,61 +195,6 @@ from phantom_tensors.torch import Tensor
 #     )
 
 
-def parse_tensors(x: tr.Tensor):
-    assert_type(parse(x, Tensor[A]), Tensor[A])
-    assert_type(parse((x, Tensor[A])), Tensor[A])
-    assert_type(
-        parse(
-            (x, Tensor[A]),
-            (x, Tensor[A, B]),
-        ),
-        tuple[Tensor[A], Tensor[A, B]],
-    )
-    assert_type(
-        parse(
-            (x, Tensor[A]),
-            (x, Tensor[A, B]),
-            (x, Tensor[B, A]),
-        ),
-        tuple[Tensor[A], Tensor[A, B], Tensor[B, A]],
-    )
-
-    assert_type(
-        parse(
-            (x, Tensor[A]),
-            (x, Tensor[A, B]),
-            (x, Tensor[B, A]),
-            (x, Tensor[B, B]),
-        ),
-        tuple[Tensor[A], Tensor[A, B], Tensor[B, A], Tensor[B, B]],
-    )
-
-    assert_type(
-        parse(
-            (x, Tensor[A]),
-            (x, Tensor[A, B]),
-            (x, Tensor[B, A]),
-            (x, Tensor[B, B]),
-            (x, Tensor[B]),
-        ),
-        tuple[Tensor[A], Tensor[A, B], Tensor[B, A], Tensor[B, B], Tensor[B]],
-    )
-
-    assert_type(
-        parse(
-            (x, Tensor[A]),
-            (x, Tensor[A, B]),
-            (x, Tensor[B, A]),
-            (x, Tensor[B, B]),
-            (x, Tensor[B]),
-            (x, Tensor[A]),
-        ),
-        tuple[
-            Tensor[A], Tensor[A, B], Tensor[B, A], Tensor[B, B], Tensor[B], Tensor[A]
-        ],
-    )
-
-
 # def check_bad_int_parse(x: tr.Tensor, y: tuple[int, ...], z: int):
 #     parse_ints(x, A)  # type: ignore
 #     parse_ints(y, A)  # type: ignore
@@ -201,12 +213,3 @@ def parse_tensors(x: tr.Tensor):
 
 #     parse_ints(y, A)  # type: ignore
 #     parse_ints(y, Tensor[A])  # type: ignore
-
-
-def check_bad_tensor_parse(x: tr.Tensor):
-    parse(1, tuple[A])  # type: ignore
-    parse((1,), A)  # type: ignore
-
-    parse(x, A)  # type: ignore
-    parse((x, A))  # type: ignore
-    parse((x, A), (x, tuple[A]))  # type: ignore

@@ -28,7 +28,9 @@ TESTS_REQUIRE = [
     "hypothesis >= 6.28.0",
 ]
 
-DESCRIPTION = "Tensor types with variadic shapes that support static and runtime type checking"
+DESCRIPTION = (
+    "Tensor types with variadic shapes that support static and runtime type checking"
+)
 LONG_DESCRIPTION = """The goal of this project is to let users write tensor-like types with variadic shapes (PEP 646) that are amendable to both: static type checking (without a mypy plugin), as well as cross-tensor consistent runtime checking of shapes. This is achieved using minimal hacks (no mypy plugin necessary).
 """
 
@@ -49,5 +51,6 @@ setup(
     package_dir={"": "src"},
     extras_require={
         "torch": ["torch>=1.7.0"],
+        "numpy": ["numpy>=1.21.0"],
     },
 )

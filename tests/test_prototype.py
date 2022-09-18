@@ -1,14 +1,9 @@
 import re
-from typing import NewType, TypeVar, cast
+from typing import NewType, TypeVar
 
 import numpy as np
 import pytest
 import torch as tr
-from beartype import beartype
-from beartype.roar import (
-    BeartypeCallHintParamViolation,
-    BeartypeCallHintReturnViolation,
-)
 from typing_extensions import Literal as L, TypeVarTuple, Unpack as U
 
 from phantom import Phantom
@@ -136,35 +131,6 @@ def test_parse_inconsistent_types(tensor_type_pairs):
         parse(*tensor_type_pairs)
 
 
-def test_type_var():
-    @dim_binding_scope
-    @beartype
-    def diag(sqr: Tensor[T, T]) -> Tensor[T]:
-        return cast(Tensor[T], tr.diag(sqr))
-
-    non_sqr = parse(tr.ones(2, 3), Tensor[A, B])
-    with pytest.raises(BeartypeCallHintParamViolation):
-        diag(non_sqr)  # type: ignore
-
-
-def test_catches_wrong_instance():
-    with pytest.raises(
-        ParseError,
-        match=re.escape(
-            "Expected <class 'numpy.ndarray'>, got: <class 'torch.Tensor'>"
-        ),
-    ):
-        parse(tr.tensor(1), NDArray[A, B])
-
-    with pytest.raises(
-        ParseError,
-        match=re.escape(
-            "Expected <class 'torch.Tensor'>, got: <class 'numpy.ndarray'>"
-        ),
-    ):
-        parse(np.array(1), Tensor[A])
-
-
 def test_isinstance_works():
     with dim_binding_scope:
 
@@ -235,55 +201,6 @@ def test_parse_bind_multiple():
         # exit dimension-binding scope
 
     parse(tr.ones(78, 22), Tensor[A, B])  # now ok
-
-
-def test_matmul_example():
-    @dim_binding_scope
-    @beartype
-    def matrix_multiply(x: Tensor[A, B], y: Tensor[B, C]) -> Tensor[A, C]:
-        out = x @ x.T
-        return cast(Tensor[A, C], out)
-
-    x, y = parse(
-        (tr.ones(3, 4), Tensor[A, B]),
-        (tr.ones(4, 5), Tensor[B, C]),
-    )
-    x  # type revealed: Tensor[A, B]
-    y  # type revealed: Tensor[B, C]
-
-    with pytest.raises(BeartypeCallHintReturnViolation):
-        matrix_multiply(x, y)
-
-
-def test_runtime_checking_with_beartype():
-    @dim_binding_scope
-    # ^ ensures A, B, C consistent across all input/output tensor shapes
-    #   within scope of function
-    @beartype
-    def matrix_multiply(x: Tensor[A, B], y: Tensor[B, C]) -> Tensor[A, C]:
-        a, b = x.shape
-        b, c = y.shape
-        return cast(Tensor[A, C], tr.ones(a, c))
-
-    @beartype
-    def needs_vector(x: Tensor[int]):
-        ...
-
-    x, y = parse(
-        (tr.ones(3, 4), Tensor[A, B]),
-        (tr.ones(4, 5), Tensor[B, C]),
-    )
-    x  # type revealed: Tensor[A, B]
-    y  # type revealed: Tensor[B, C]
-
-    z = matrix_multiply(x, y)
-    z  # type revealed: Tensor[A, C]
-
-    with pytest.raises(Exception):
-        needs_vector(z)  # type: ignore
-
-    with pytest.raises(Exception):
-        matrix_multiply(x, x)  # type: ignore
 
 
 AStr = NewType("AStr", str)
