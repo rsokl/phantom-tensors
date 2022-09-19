@@ -4,7 +4,7 @@ from typing import NewType, TypeVar, cast
 import numpy as np
 import pytest
 import torch as tr
-from beartype import beartype
+from beartype import beartype  # type: ignore
 from beartype.roar import (
     BeartypeCallHintParamViolation,
     BeartypeCallHintReturnViolation,

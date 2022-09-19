@@ -1,6 +1,6 @@
-"""Convenient definitions of 
+"""Convenient definitions of
 
-<Word> = NewType('<Word>', int) 
+<Word> = NewType('<Word>', int)
 
 to be used as descriptive axis names in shape types"""
 from typing import NewType as _NewType
@@ -58,4 +58,3 @@ Dim3 = _NewType("Dim3", int)
 Dim4 = _NewType("Dim4", int)
 Dim5 = _NewType("Dim5", int)
 Dim6 = _NewType("Dim6", int)
-
