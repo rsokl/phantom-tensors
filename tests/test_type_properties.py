@@ -31,3 +31,8 @@ def test_literals_can_check_by_identity(a: Tuple[int, ...], b: Tuple[int, ...]):
 def test_literal_hashes_consistently():
     assert {Literal[1]: 1}[Literal[1]] == 1
     assert hash(Literal[1, 2]) == hash(Literal[1, 2])
+
+
+@pytest.mark.parametrize("content", [1, 2, (1, 2)])
+def test_literal_args_always_tuples(content):
+    assert Literal[content].__args__ == (content,) if not isinstance(content, tuple) else content  # type: ignore
