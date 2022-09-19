@@ -1,5 +1,5 @@
 import re
-from typing import TypeVar, cast
+from typing import NewType, TypeVar, cast
 
 import numpy as np
 import pytest
@@ -9,14 +9,30 @@ from beartype.roar import (
     BeartypeCallHintParamViolation,
     BeartypeCallHintReturnViolation,
 )
+from typing_extensions import TypeVarTuple, Unpack as U
 
+from phantom import Phantom
 from phantom_tensors import dim_binding_scope, parse
 from phantom_tensors.alphabet import A, B, C
+from phantom_tensors.array import SupportsArray as Array
 from phantom_tensors.errors import ParseError
 from phantom_tensors.numpy import NDArray
 from phantom_tensors.torch import Tensor
+from tests.arrlike import arr
 
 T = TypeVar("T")
+Ts = TypeVarTuple("Ts")
+
+
+class One_to_Three(int, Phantom, predicate=lambda x: 0 < x < 4):
+    ...
+
+
+class Ten_or_Eleven(int, Phantom, predicate=lambda x: 10 <= x <= 11):
+    ...
+
+
+NewOneToThree = NewType("NewOneToThree", One_to_Three)
 
 
 def test_NDArray():
@@ -42,6 +58,13 @@ def test_Tensor():
     [
         (tr.ones(2), NDArray[int]),  # type mismatch
         (np.ones((2,)), Tensor[int]),  # type mismatch
+        (arr(10, 2, 10), Array[One_to_Three, int, Ten_or_Eleven]),
+        (arr(10, 2, 10), Array[NewOneToThree, int, Ten_or_Eleven]),
+        (arr(2, 2, 8), Array[NewOneToThree, int, Ten_or_Eleven]),
+        (arr(0, 10), Array[One_to_Three, U[Ts], Ten_or_Eleven]),
+        (arr(2, 2, 0), Array[One_to_Three, U[Ts], Ten_or_Eleven]),
+        (arr(2, 0, 0, 0), Array[One_to_Three, U[Ts], Ten_or_Eleven]),
+        (arr(0, 0, 2, 0), Array[U[Ts], One_to_Three, Ten_or_Eleven]),
     ],
 )
 def test_parse_inconsistent_types(tensor_type_pairs):
@@ -71,8 +94,8 @@ def test_matmul_example():
         (tr.ones(3, 4), Tensor[A, B]),
         (tr.ones(4, 5), Tensor[B, C]),
     )
-    x  # type revealed: Tensor[A, B]
-    y  # type revealed: Tensor[B, C]
+    # x  # type revealed: Tensor[A, B]
+    # y  # type revealed: Tensor[B, C]
 
     with pytest.raises(BeartypeCallHintReturnViolation):
         matrix_multiply(x, y)
@@ -96,11 +119,11 @@ def test_runtime_checking_with_beartype():
         (tr.ones(3, 4), Tensor[A, B]),
         (tr.ones(4, 5), Tensor[B, C]),
     )
-    x  # type revealed: Tensor[A, B]
-    y  # type revealed: Tensor[B, C]
+    # x  # type revealed: Tensor[A, B]
+    # y  # type revealed: Tensor[B, C]
 
     z = matrix_multiply(x, y)
-    z  # type revealed: Tensor[A, C]
+    # z  # type revealed: Tensor[A, C]
 
     with pytest.raises(Exception):
         needs_vector(z)  # type: ignore
@@ -141,3 +164,18 @@ def test_isinstance_works():
 
     assert isinstance(tr.ones(1, 3, 3, 1), Tensor[B, A, A, B])  # type: ignore
     assert isinstance(tr.ones(1, 4, 4, 1), Tensor[B, A, A, B])  # type: ignore
+
+
+@pytest.mark.parametrize(
+    "tensor_type_pairs",
+    [
+        (arr(2, 2, 10), Array[One_to_Three, int, Ten_or_Eleven]),
+        (arr(2, 10), Array[One_to_Three, U[Ts], Ten_or_Eleven]),
+        (arr(2, 2, 10), Array[One_to_Three, U[Ts], Ten_or_Eleven]),
+        (arr(2, 0, 0, 10), Array[One_to_Three, U[Ts], Ten_or_Eleven]),
+        (arr(2, 2, 10), Array[NewOneToThree, int, Ten_or_Eleven]),
+        (arr(0, 0, 2, 11), Array[U[Ts], One_to_Three, Ten_or_Eleven]),
+    ],
+)
+def test_parse_consistent_types(tensor_type_pairs):
+    parse(*tensor_type_pairs)

@@ -5,7 +5,7 @@ except ImportError:
         "You must install pytorch in order to user `phantom_tensors.torch`"
     )
 
-from typing import TYPE_CHECKING, Generic
+from typing import TYPE_CHECKING, Generic, Tuple
 
 import typing_extensions as _te
 
@@ -52,5 +52,5 @@ class Tensor(Generic[_te.Unpack[Shape]], _Tensor):
             return PhantomTensor
 
     @property
-    def shape(self) -> tuple[_te.Unpack[Shape]]:
+    def shape(self) -> Tuple[_te.Unpack[Shape]]:
         ...

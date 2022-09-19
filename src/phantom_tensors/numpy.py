@@ -4,7 +4,7 @@ try:
 except ImportError:
     raise ImportError("You must install numpy in order to user `phantom_tensors.numpy`")
 
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, Tuple
 
 import typing_extensions as _te
 
@@ -47,5 +47,5 @@ class NDArray(Generic[_te.Unpack[Shape]], _NDArray[Any]):
             return PhantomTensor
 
     @property
-    def shape(self) -> tuple[_te.Unpack[Shape]]:
+    def shape(self) -> Tuple[_te.Unpack[Shape]]:
         ...

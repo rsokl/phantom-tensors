@@ -4,7 +4,6 @@ from typing import NewType, TypeVar
 import pytest
 from typing_extensions import Literal as L, TypeVarTuple, Unpack as U
 
-from phantom import Phantom
 from phantom_tensors import dim_binding_scope, parse
 from phantom_tensors.array import SupportsArray as Array
 from phantom_tensors.errors import ParseError
@@ -15,17 +14,6 @@ Ts = TypeVarTuple("Ts")
 A = NewType("A", int)
 B = NewType("B", int)
 C = NewType("C", int)
-
-
-class One_to_Three(int, Phantom, predicate=lambda x: 0 < x < 4):
-    ...
-
-
-class Ten_or_Eleven(int, Phantom, predicate=lambda x: 10 <= x <= 11):
-    ...
-
-
-NewOneToThree = NewType("NewOneToThree", One_to_Three)
 
 
 def test_parse_error_msg():
@@ -64,12 +52,6 @@ def test_parse_error_msg():
         (arr(3), Array[L[1, 2, 3]]),
         (arr(1, 2), Array[L[1], L[2]]),
         (arr(1, 2, 1), Array[L[1], L[2], L[1]]),
-        (arr(2, 2, 10), Array[One_to_Three, int, Ten_or_Eleven]),
-        (arr(2, 10), Array[One_to_Three, U[Ts], Ten_or_Eleven]),
-        (arr(2, 2, 10), Array[One_to_Three, U[Ts], Ten_or_Eleven]),
-        (arr(2, 0, 0, 10), Array[One_to_Three, U[Ts], Ten_or_Eleven]),
-        (arr(2, 2, 10), Array[NewOneToThree, int, Ten_or_Eleven]),
-        (arr(0, 0, 2, 11), Array[U[Ts], One_to_Three, Ten_or_Eleven]),
     ],
 )
 def test_parse_consistent_types(tensor_type_pairs):
@@ -95,13 +77,6 @@ def test_parse_consistent_types(tensor_type_pairs):
         (arr(2, 2), Array[L[1], L[2]]),
         (arr(1, 1), Array[L[1], L[2]]),
         (arr(1, 1, 1), Array[L[1], L[2], L[1]]),
-        (arr(10, 2, 10), Array[One_to_Three, int, Ten_or_Eleven]),
-        (arr(10, 2, 10), Array[NewOneToThree, int, Ten_or_Eleven]),
-        (arr(2, 2, 8), Array[NewOneToThree, int, Ten_or_Eleven]),
-        (arr(0, 10), Array[One_to_Three, U[Ts], Ten_or_Eleven]),
-        (arr(2, 2, 0), Array[One_to_Three, U[Ts], Ten_or_Eleven]),
-        (arr(2, 0, 0, 0), Array[One_to_Three, U[Ts], Ten_or_Eleven]),
-        (arr(0, 0, 2, 0), Array[U[Ts], One_to_Three, Ten_or_Eleven]),
     ],
 )
 def test_parse_inconsistent_types(tensor_type_pairs):

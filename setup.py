@@ -19,10 +19,10 @@ CLASSIFIERS = [
 ]
 
 INSTALL_REQUIRES = [
-    "phantom-types >= 0.17.1",
     "typing-extensions >= 4.1.0",
 ]
 TESTS_REQUIRE = [
+    "phantom-types >= 0.17.1",
     "beartype >= 0.10.4",
     "pytest >= 3.8",
     "hypothesis >= 6.28.0",
