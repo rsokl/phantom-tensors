@@ -274,4 +274,4 @@ with pytest.raises(Exception):
 
 ## Installation
 
-Clone and pip-install. See `setup.py` for requirements
+Clone and pip-install. See `setup.py` for requirements.
