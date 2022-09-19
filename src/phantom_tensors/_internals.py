@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from functools import wraps
-from typing import Any, Callable, Optional, Type, TypeVar, Union, cast
+from typing import Any, Callable, Optional, Tuple, Type, TypeVar, Union, cast
 
 from typing_extensions import TypeAlias
 
@@ -58,7 +58,7 @@ def setdefault_binding(symbol, value):
         return DimBinder.bindings.setdefault(symbol, value)
 
 
-def check(shape_type: tuple[ShapeDimType, ...], shape: tuple[int, ...]) -> bool:
+def check(shape_type: Tuple[ShapeDimType, ...], shape: Tuple[int, ...]) -> bool:
     # Don't need to check types / values of `shape` -- assumed
     # to be donwstream of `ndarray.shape`  call and thus already
     # validatated

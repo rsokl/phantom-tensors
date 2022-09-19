@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Tuple, Type
 
 from typing_extensions import Literal, Protocol, TypeGuard, TypeVarTuple, Unpack
 
@@ -12,7 +12,7 @@ LiteralType = type(Literal[1])
 
 class NewTypeLike(Protocol):
     __name__: str
-    __supertype__: type[Any]
+    __supertype__: Type[Any]
 
     def __call__(self, x: Any) -> int:
         ...
@@ -20,7 +20,7 @@ class NewTypeLike(Protocol):
 
 class NewTypeInt(Protocol):
     __name__: str
-    __supertype__: type[int]
+    __supertype__: Type[int]
 
     def __call__(self, x: Any) -> int:
         ...
@@ -29,24 +29,24 @@ class NewTypeInt(Protocol):
 class UnpackLike(Protocol):
     _inst: Literal[True]
     _name: Literal[None]
-    __origin__: type[Any] = Unpack
-    __args__: tuple[TypeVarTuple]
-    __parameters__: tuple[TypeVarTuple]
+    __origin__: Type[Any] = Unpack
+    __args__: Tuple[TypeVarTuple]
+    __parameters__: Tuple[TypeVarTuple]
     __module__: str
 
 
 class LiteralLike(Protocol):
     _inst: Literal[True]
     _name: Literal[None]
-    __origin__: type[Any] = Literal
-    __args__: tuple[Any, ...]
-    __parameters__: tuple[()]
+    __origin__: Type[Any] = Literal
+    __args__: Tuple[Any, ...]
+    __parameters__: Tuple[()]
     __module__: str
 
 
 class TupleGeneric(Protocol):
-    __origin__: type[tuple]
-    __args__: tuple[type[Any], ...]
+    __origin__: Type[tuple]
+    __args__: Tuple[Type[Any], ...]
 
 
 def is_newtype(x: Any) -> TypeGuard[NewTypeLike]:
