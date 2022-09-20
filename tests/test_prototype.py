@@ -1,5 +1,5 @@
 import re
-from typing import NewType, TypeVar
+from typing import Any, NewType, TypeVar
 
 import pytest
 from typing_extensions import Literal as L, TypeVarTuple, Unpack as U
@@ -30,6 +30,8 @@ def test_parse_error_msg():
         (arr(), Array[()]),
         (arr(), Array[U[Ts]]),
         (arr(2), Array[A]),
+        (arr(2), Array[int]),
+        (arr(2), Array[Any]),
         (arr(2), Array[U[Ts]]),
         (arr(2), Array[U[Ts], A]),
         (arr(2), Array[A, U[Ts]]),
@@ -41,6 +43,7 @@ def test_parse_error_msg():
         (arr(2, 1, 3, 2), Array[A, U[Ts], A]),
         (arr(2, 2, 1, 3), Array[A, A, U[Ts]]),
         (arr(1, 2, 1, 3, 2), Array[A, B, U[Ts], B]),
+        (arr(1, 2, 3), Array[Any, Any, Any]),
         (arr(1, 2, 3), Array[int, int, int]),
         (arr(2, 1, 2), Array[A, B, A]),
         (arr(2, 1, 3), Array[A, B, C]),

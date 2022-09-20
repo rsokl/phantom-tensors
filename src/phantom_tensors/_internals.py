@@ -13,6 +13,7 @@ from phantom_tensors._utils import LiteralLike, NewTypeLike, UnpackLike
 ShapeDimType: TypeAlias = Union[
     Type[int],
     Type[UnpackLike],
+    # Literal[Type[Any]]  -- can't actually express this
     # the following all bind as dimension symbols by-reference
     Type[TypeVar],
     NewTypeLike,
@@ -71,8 +72,9 @@ def check(shape_type: Tuple[ShapeDimType, ...], shape: Tuple[int, ...]) -> bool:
     # TODO: Add caching to validation process.
     #       - Should this use weakrefs?
     for n, dim_symbol in enumerate(shape_type):
-        if dim_symbol is int:
-            # E.g. Tensor[int, int]: no constraints on shape
+        if dim_symbol is Any or dim_symbol is int:
+            # E.g. Tensor[int, int] or Tensor[Any]
+            # --> no constraints on shape
             continue
         if _utils.is_typevar_unpack(dim_symbol):
             if var_field_ind is not None:
@@ -140,7 +142,7 @@ def check(shape_type: Tuple[ShapeDimType, ...], shape: Tuple[int, ...]) -> bool:
             continue
 
         actual_val = shape[indices[0]]
-        if _bindings is None or symbol is int:
+        if _bindings is None or symbol is Any or symbol is int:
             expected_val = actual_val
         else:
             if symbol in _bindings:
