@@ -33,18 +33,16 @@ y  # static type checker sees: NDArray[B, A]
 Amendable to **static type checking (without mypy plugins)**. E.g.,
 
 ```python
-from typing import NewType
+from typing import Any
 
 import numpy as np
 
 from phantom_tensors import parse
 from phantom_tensors.numpy import NDArray
+from phantom_tensors.alphabet import A, B  # these are just NewType(..., int) types
 
-A = NewType("A", int)
-B = NewType("B", int)
-
-def func_on_2d(x: NDArray[int, int]): ...
-def func_on_3d(x: NDArray[int, int, int]): ...
+def func_on_2d(x: NDArray[Any, Any]): ...
+def func_on_3d(x: NDArray[Any, Any, Any]): ...
 def func_on_any_arr(x: np.ndarray): ...
 
 # runtime: ensures shape of arr_3d matches (A, B, A) patterns
