@@ -1,6 +1,7 @@
-"""Convenient definitions of 
+# pyright: strict
+"""Convenient definitions of
 
-<Letter> = NewType('<Letter>', int) 
+<Letter> = NewType('<Letter>', int)
 
 to be used as descriptive axis labels in shape types"""
 
@@ -43,13 +44,13 @@ E = _NewType("E", int)
 F = _NewType("F", int)
 G = _NewType("G", int)
 H = _NewType("H", int)
-I = _NewType("I", int)
+I = _NewType("I", int)  # noqa: E741
 J = _NewType("J", int)
 K = _NewType("K", int)
 L = _NewType("L", int)
 M = _NewType("M", int)
 N = _NewType("N", int)
-O = _NewType("O", int)
+O = _NewType("O", int)  # noqa: E741
 P = _NewType("P", int)
 Q = _NewType("Q", int)
 R = _NewType("R", int)

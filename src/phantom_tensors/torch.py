@@ -1,3 +1,4 @@
+# pyright: strict
 try:
     from torch import Tensor as _Tensor
 except ImportError:
@@ -52,5 +53,5 @@ class Tensor(Generic[_te.Unpack[Shape]], _Tensor):
             return PhantomTensor
 
     @property
-    def shape(self) -> Tuple[_te.Unpack[Shape]]:
+    def shape(self) -> Tuple[_te.Unpack[Shape]]:  # type: ignore
         ...

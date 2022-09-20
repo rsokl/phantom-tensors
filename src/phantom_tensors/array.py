@@ -1,5 +1,4 @@
-from __future__ import annotations
-
+# pyright: strict
 from typing import TYPE_CHECKING, Any
 
 import typing_extensions as _te

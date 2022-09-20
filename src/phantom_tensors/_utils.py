@@ -1,4 +1,4 @@
-from __future__ import annotations
+# pyright: strict
 
 from typing import Any, Tuple, Type
 
@@ -45,7 +45,7 @@ class LiteralLike(Protocol):
 
 
 class TupleGeneric(Protocol):
-    __origin__: Type[tuple]
+    __origin__: Type[Tuple[Any, ...]]
     __args__: Tuple[Type[Any], ...]
 
 

@@ -1,3 +1,4 @@
+# pyright: strict
 """Convenient definitions of
 
 <Word> = NewType('<Word>', int)

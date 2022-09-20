@@ -50,7 +50,8 @@ def func_on_any_arr(x: np.ndarray): ...
 # runtime: ensures shape of arr_3d matches (A, B, A) patterns
 arr_3d = parse(np.ones((3, 5, 3)), NDArray[A, B, A])
 
-func_on_2d(arr_3d)  # static type checker: error
+func_on_2d(arr_3d)  # static type checker: Error!  # expects 2D arr, got 3D
+
 func_on_3d(arr_3d)  # static type checker: OK
 func_on_any_arr(arr_3d)  # static type checker: OK
 ```

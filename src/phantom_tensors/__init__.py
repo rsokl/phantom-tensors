@@ -1,3 +1,4 @@
+# pyright: strict
 from ._internals import dim_binding_scope
 from ._parse import parse
 
