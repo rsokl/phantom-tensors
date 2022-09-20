@@ -23,7 +23,6 @@ class SupportsArray(Protocol[_te.Unpack[Shape]]):
 
         @classmethod
         def __class_getitem__(cls, key):
-            print(key)
             if not isinstance(key, tuple):
                 key = (key,)
 
@@ -39,7 +38,6 @@ class SupportsArray(Protocol[_te.Unpack[Shape]]):
 
                 @classmethod
                 def __instancecheck__(cls, __instance: Any) -> bool:
-                    print(key, __instance.shape)
                     return check(key, __instance.shape)
 
             return PhantomHasShape
