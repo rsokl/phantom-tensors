@@ -40,7 +40,7 @@ class NDArray(Generic[_te.Unpack[Shape]], _NDArray[Any]):
                 _Phantom,
                 predicate=lambda x: check(key, x.shape),
             ):
-                _shape = key
+                __args__ = key
 
             if kk is not None:
                 cls._cache[kk] = PhantomTensor

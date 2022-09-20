@@ -27,7 +27,7 @@ class SupportsArray(Protocol[_te.Unpack[Shape]]):
 
             class PhantomHasShape:
                 __bound__ = (object,)
-                _shape = key
+                __args__ = key
 
                 def __array__(self) -> Any:
                     ...

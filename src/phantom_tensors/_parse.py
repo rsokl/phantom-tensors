@@ -1,13 +1,13 @@
 # pyright: strict
 from __future__ import annotations
 
-from typing import Any, List, Tuple, Type, TypeVar, cast, overload
+from typing import Any, List, Tuple, Type, TypeVar, Union, cast, overload
 
-from typing_extensions import Protocol, TypeAlias, TypeVarTuple
+from typing_extensions import ClassVar, Protocol, TypeAlias, TypeVarTuple
 
 import phantom_tensors._utils as _utils
 
-from ._internals import DimBinder, check, dim_binding_scope
+from ._internals import DimBinder, ShapeDimType, check, dim_binding_scope
 from .errors import ParseError
 
 __all__ = ["parse"]
@@ -15,6 +15,16 @@ __all__ = ["parse"]
 Ta = TypeVar("Ta", bound=Tuple[Any, Any])
 Tb = TypeVar("Tb")
 Ts = TypeVarTuple("Ts")
+
+
+class _Generic(Protocol):
+    __origin__: Type[Any]
+    __args__: Tuple[ShapeDimType, ...]
+
+
+class _Phantom(Protocol):
+    __bound__: ClassVar[Union[Type[Any], Tuple[Type[Any], ...]]]
+    __args__: Tuple[ShapeDimType, ...]
 
 
 class HasShape(Protocol):
@@ -149,15 +159,27 @@ def parse(
     del tensor_type_pairs
 
     for tensor, type_ in pairs:
-        # Todo: remove phantom type logic
-        if not isinstance(tensor, type_.__bound__):  # type: ignore
-            if isinstance(type_.__bound__, tuple):
-                tp, *_ = type_.__bound__
-            else:
-                tp = type_.__bound__
-            raise ParseError(f"Expected {tp}, got: {type(tensor)}")
+        if hasattr(type_, "__origin__"):
+            type_ = cast(_Generic, type_)
+            type_shape = type_.__args__
+            if not isinstance(tensor, type_.__origin__):
+                raise ParseError(f"Expected {type_.__origin__}, got: {type(tensor)}")
 
-        type_shape = type_._shape  # type: ignore
+        elif hasattr(type_, "__bound__"):
+            # Todo: remove phantom type logic
+            type_ = cast(_Phantom, type_)
+
+            if not isinstance(tensor, type_.__bound__):
+                if isinstance(type_.__bound__, tuple):
+                    tp, *_ = type_.__bound__
+                else:
+                    tp = type_.__bound__
+                raise ParseError(f"Expected {tp}, got: {type(tensor)}")
+
+            type_shape = type_.__args__
+        else:
+            assert False
+
         if not check(type_shape, tensor.shape):
             assert DimBinder.bindings is not None
             type_str = ", ".join(

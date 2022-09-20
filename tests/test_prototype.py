@@ -27,7 +27,7 @@ def test_parse_error_msg():
 @pytest.mark.parametrize(
     "tensor_type_pairs",
     [
-        (arr(), Array[()]),
+        # (arr(), Array[()]),
         (arr(), Array[U[Ts]]),
         (arr(2), Array[A]),
         (arr(2), Array[int]),
