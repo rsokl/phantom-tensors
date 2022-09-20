@@ -50,14 +50,6 @@ class DimBindContext:
 dim_binding_scope = DimBindContext()
 
 
-def setdefault_binding(symbol, value):
-    # to do: speed up by short-cutting access to .bindings
-    if DimBinder.bindings is None or symbol is int:
-        return value
-    else:
-        return DimBinder.bindings.setdefault(symbol, value)
-
-
 def check(shape_type: Tuple[ShapeDimType, ...], shape: Tuple[int, ...]) -> bool:
     # Don't need to check types / values of `shape` -- assumed
     # to be donwstream of `ndarray.shape`  call and thus already
@@ -73,33 +65,45 @@ def check(shape_type: Tuple[ShapeDimType, ...], shape: Tuple[int, ...]) -> bool:
 
     var_field_ind: Optional[int] = None  # contains *Ts
 
-    # TODO: add caching
+    # TODO: Add caching to validation process.
+    #       - Should this use weakrefs?
     for n, dim_symbol in enumerate(shape_type):
         if dim_symbol is int:
             # E.g. Tensor[int, int]: no constraints on shape
             continue
         if _utils.is_typevar_unpack(dim_symbol):
             if var_field_ind is not None:
-                assert False  # duplicate vartuple not allowed!
+                raise TypeError(
+                    f"Type-shape {shape_type} specifies more than one TypeVarTuple"
+                )
             var_field_ind = n
             continue
 
         # The following symbols bind to dimensions (by symbol-reference)
         # Some of them may also carry with them additional validation checks,
         # which need only be checked when the symbol is first bound
+        _match_list = matches[dim_symbol]
+
+        if _match_list or dim_symbol in validators:
+            # We have already encountered symbol; do not need to validate or
+            # extract validation function
+            _match_list.append(n if var_field_ind is None else n - len(shape_type))
+            continue
 
         if _utils.is_newtype(dim_symbol):
             _supertype = dim_symbol.__supertype__
             if _supertype is not int:
                 if not issubclass(_supertype, int):
                     raise TypeError(
-                        f"Dimensions expressed by NewTypes must be associated with an int or subclass of int. Got NewType of supertype {_supertype}"
+                        f"Dimensions expressed by NewTypes must be associated with an "
+                        f"int or subclass of int. shape-type {shape_type} contains a "
+                        f"NewType of supertype {_supertype}"
                     )
                 validators[dim_symbol] = lambda x, sp=_supertype: isinstance(x, sp)
             del _supertype
         elif isinstance(dim_symbol, TypeVar):
             pass
-        elif _utils.is_literal(dim_symbol):
+        elif _utils.is_literal(dim_symbol) and dim_symbol:
             _expected_literals = dim_symbol.__args__
             validators[dim_symbol] = lambda x, y=_expected_literals: any(
                 x == val for val in y
@@ -110,10 +114,11 @@ def check(shape_type: Tuple[ShapeDimType, ...], shape: Tuple[int, ...]) -> bool:
             validators[dim_symbol] = lambda x, type_=dim_symbol: isinstance(x, type_)
         else:
             raise TypeError(
-                f"Got shape-type {shape_type} with dim {dim_symbol}. Valid dimensions are `type[int] | Unpack | TypeVar | NewType | Literal`"
+                f"Got shape-type {shape_type} with dim {dim_symbol}. Valid dimensions "
+                f"are `type[int] | Unpack | TypeVar | NewType | Literal`"
             )
 
-        matches[dim_symbol].append(n if var_field_ind is None else n - len(shape_type))
+        _match_list.append(n if var_field_ind is None else n - len(shape_type))
 
     if var_field_ind is None and len(shape_type) != len(shape):
         return False
@@ -130,21 +135,18 @@ def check(shape_type: Tuple[ShapeDimType, ...], shape: Tuple[int, ...]) -> bool:
         if len(indices) == 1 and _bindings is None and validation_fn is None:
             continue
 
-        first_index, *rest = indices
-        actual_val = shape[first_index]
+        actual_val = shape[indices[0]]
         if _bindings is None or symbol is int:
             expected_val = actual_val
         else:
             if symbol in _bindings:
                 expected_val = _bindings[symbol]
-                if actual_val != expected_val:
-                    return False
             else:
                 if validation_fn is not None and not validation_fn(actual_val):
                     return False
                 _bindings[symbol] = actual_val
                 expected_val = actual_val
 
-        if not all(expected_val == shape[val_b] for val_b in rest):
+        if not all(expected_val == shape[index] for index in indices):
             return False
     return True
