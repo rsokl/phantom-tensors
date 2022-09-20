@@ -8,7 +8,9 @@ The goal of this project is to let users write tensor-like types with variadic s
 Easy for users to use to **perform parsing (i.e. validation and type-narrowing)**:
 
 ```python
+# pyright: strict
 from typing import NewType
+from typing_extensions import assert_type
 
 import numpy as np
 
@@ -57,6 +59,7 @@ Useful for performing **runtime checks of tensor types and shapes**. E.g.,
 
 ```python
 from typing import TypeVar, cast
+from typing_extensions import assert_type
 
 import torch as tr
 from beartype import beartype
@@ -203,8 +206,6 @@ parse(tr.ones(3, 0, 0, 0, 3), Tensor[L[1], U[Ts], L[3]])  # ParseError
 Supports phatom type dimensions (i.e. `int` subclasses that override `__isinstance__` checks):
 
 ```python
-from typing_extensions import Unpack as U, TypeVarTuple, Literal as L
-
 from phantom_tensors import parse
 from phantom_tensors.torch import Tensor
 
@@ -217,7 +218,7 @@ parse(tr.ones(1, 0), Tensor[int, EvenOnly])  # static return type: Tensor[int, E
 parse(tr.ones(1, 2), Tensor[int, EvenOnly])  # static return type: Tensor[int, EvenOnly] 
 parse(tr.ones(1, 4), Tensor[int, EvenOnly])  # static return type: Tensor[int, EvenOnly] 
 
-parse(tr.ones(1, 3), Tensor[int, EvenOnly])  # ParseError
+parse(tr.ones(1, 3), Tensor[int, EvenOnly])  # runtime: ParseError
 ```
 
 
@@ -231,12 +232,14 @@ parse(tr.ones(1, 3), Tensor[int, EvenOnly])  # ParseError
 Thanks to the ability bind dimensions within a specified context, all `beartype` needs to do is faithfully call `isinstance(...)` within said context and we can have the inputs and ouputs of a phantom-tensor-annotated function get checked!
 
 ```python
-from typing import cast
+from typing import Any
 
-from beartype import beartype
+from beartype import beartype  # type: ignore
+import pytest
 
-from phantom_tensors import dim_binding_scope
-
+from phantom_tensors.alphabet import A, B, C
+from phantom_tensors.torch import Tensor
+from phantom_tensors import dim_binding_scope, parse
 
 # @dim_binding_scope:
 #   ensures A, B, C consistent across all input/output tensor shapes
@@ -244,12 +247,12 @@ from phantom_tensors import dim_binding_scope
 @dim_binding_scope 
 @beartype  # <-- adds isinstance checks on inputs & outputs
 def matrix_multiply(x: Tensor[A, B], y: Tensor[B, C]) -> Tensor[A, C]:
-    a, b = x.shape
-    b, c = y.shape
-    return cast(Tensor[A, C], tr.rand(a, c))
+    a, _ = x.shape
+    _, c = y.shape
+    return parse(tr.rand(a, c), Tensor[A, C])
 
 @beartype
-def needs_vector(x: Tensor[int]): ...
+def needs_vector(x: Tensor[Any]): ...
 
 x, y = parse(
     (tr.rand(3, 4), Tensor[A, B]),
