@@ -1,8 +1,9 @@
+# pyright: strict
 from __future__ import annotations
 
-from typing import Any, Tuple, Type, TypeVar, cast, overload
+from typing import Any, List, Tuple, Type, TypeVar, cast, overload
 
-from typing_extensions import Protocol, TypeAlias, TypeVarTuple, Unpack as U
+from typing_extensions import Protocol, TypeAlias, TypeVarTuple
 
 import phantom_tensors._utils as _utils
 
@@ -16,9 +17,9 @@ Tb = TypeVar("Tb")
 Ts = TypeVarTuple("Ts")
 
 
-class HasShape(Protocol[U[Ts]]):
+class HasShape(Protocol):
     @property
-    def shape(self) -> Tuple[U[Ts]]:
+    def shape(self) -> Any:
         ...
 
 
@@ -38,12 +39,12 @@ Ts4 = TypeVarTuple("Ts4")
 Ts5 = TypeVarTuple("Ts5")
 Ts6 = TypeVarTuple("Ts6")
 
-T1 = TypeVar("T1", bound=tuple)
-T2 = TypeVar("T2", bound=tuple)
-T3 = TypeVar("T3", bound=tuple)
-T4 = TypeVar("T4", bound=tuple)
-T5 = TypeVar("T5", bound=tuple)
-T6 = TypeVar("T6", bound=tuple)
+T1 = TypeVar("T1", bound=Tuple[Any, ...])
+T2 = TypeVar("T2", bound=Tuple[Any, ...])
+T3 = TypeVar("T3", bound=Tuple[Any, ...])
+T4 = TypeVar("T4", bound=Tuple[Any, ...])
+T5 = TypeVar("T5", bound=Tuple[Any, ...])
+T6 = TypeVar("T6", bound=Tuple[Any, ...])
 
 
 I1 = TypeVar("I1", bound=int)
@@ -134,7 +135,6 @@ def parse(
 def parse(
     *tensor_type_pairs: Tuple[HasShape, Type[HasShape]] | HasShape | Type[HasShape]
 ) -> HasShape | Tuple[HasShape, ...]:
-    out = []
     if len(tensor_type_pairs) == 0:
         raise ValueError("")
     if len(tensor_type_pairs) == 2 and not isinstance(tensor_type_pairs[0], tuple):
@@ -143,6 +143,8 @@ def parse(
     pairs = cast(
         Tuple[Tuple[HasShape, Type[HasShape]], ...], _to_tuple(tensor_type_pairs)
     )
+
+    out: List[HasShape] = []
 
     del tensor_type_pairs
 

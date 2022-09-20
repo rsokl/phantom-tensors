@@ -1,8 +1,9 @@
+# pyright: strict
 from __future__ import annotations
 
 from collections import defaultdict
 from functools import wraps
-from typing import Any, Callable, Optional, Tuple, Type, TypeVar, Union, cast
+from typing import Any, Callable, Iterable, Optional, Tuple, Type, TypeVar, Union, cast
 
 from typing_extensions import TypeAlias
 
@@ -17,6 +18,8 @@ ShapeDimType: TypeAlias = Union[
     NewTypeLike,
     LiteralLike,
 ]
+
+LiteralCheck: TypeAlias = Callable[[Any, Iterable[Any]], bool]
 
 F = TypeVar("F", bound=Callable[..., Any])
 
@@ -33,14 +36,14 @@ class DimBindContext:
         if self._depth == 1:
             DimBinder.bindings = {}
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any):
         self._depth -= 1
         if self._depth == 0:
             DimBinder.bindings = None
 
     def __call__(self, func: F) -> F:
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any):
             with self:
                 return func(*args, **kwargs)
 
@@ -99,19 +102,20 @@ def check(shape_type: Tuple[ShapeDimType, ...], shape: Tuple[int, ...]) -> bool:
                         f"int or subclass of int. shape-type {shape_type} contains a "
                         f"NewType of supertype {_supertype}"
                     )
-                validators[dim_symbol] = lambda x, sp=_supertype: isinstance(x, sp)
+                validators[dim_symbol] = lambda x, sp=_supertype: isinstance(x, sp)  # type: ignore
             del _supertype
         elif isinstance(dim_symbol, TypeVar):
             pass
         elif _utils.is_literal(dim_symbol) and dim_symbol:
             _expected_literals = dim_symbol.__args__
-            validators[dim_symbol] = lambda x, y=_expected_literals: any(
+            literal_check: LiteralCheck = lambda x, y=_expected_literals: any(
                 x == val for val in y
             )
+            validators[dim_symbol] = literal_check
             del _expected_literals
 
         elif isinstance(dim_symbol, type) and issubclass(dim_symbol, int):
-            validators[dim_symbol] = lambda x, type_=dim_symbol: isinstance(x, type_)
+            validators[dim_symbol] = lambda x, type_=dim_symbol: isinstance(x, type_)  # type: ignore
         else:
             raise TypeError(
                 f"Got shape-type {shape_type} with dim {dim_symbol}. Valid dimensions "
