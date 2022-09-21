@@ -26,9 +26,6 @@ x, y = parse(
     (np.ones((2, 3)), NDArray[A, B]),
     (np.ones((3, 2)), NDArray[B, A]),
 )
-
-x  # static type checker sees: NDArray[A, B]
-y  # static type checker sees: NDArray[B, A]
 ```
 
 

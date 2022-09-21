@@ -32,7 +32,7 @@ class SupportsArray(Protocol[_te.Unpack[Shape]]):
                 def __array__(self) -> Any:
                     ...
 
-                def shape(self) -> tuple[int, ...]:
+                def shape(self) -> Tuple[int, ...]:
                     ...
 
                 @classmethod
