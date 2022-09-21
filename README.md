@@ -8,7 +8,6 @@ The goal of this project is to let users write tensor-like types with variadic s
 Easy for users to use to **perform parsing (i.e. validation and type-narrowing)**:
 
 ```python
-# pyright: strict
 from typing import NewType
 from typing_extensions import assert_type
 
@@ -26,6 +25,9 @@ x, y = parse(
     (np.ones((2, 3)), NDArray[A, B]),
     (np.ones((3, 2)), NDArray[B, A]),
 )
+
+x  # static type checker sees: NDArray[A, B]
+y  # static type checker sees: NDArray[B, A]
 ```
 
 
