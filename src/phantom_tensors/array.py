@@ -1,5 +1,5 @@
 # pyright: strict
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Tuple
 
 import typing_extensions as _te
 from typing_extensions import Protocol, runtime_checkable
@@ -45,5 +45,5 @@ class SupportsArray(Protocol[_te.Unpack[Shape]]):
         ...
 
     @property
-    def shape(self) -> tuple[_te.Unpack[Shape]]:
+    def shape(self) -> Tuple[_te.Unpack[Shape]]:
         ...
