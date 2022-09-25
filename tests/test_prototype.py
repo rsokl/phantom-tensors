@@ -69,6 +69,7 @@ def test_parse_consistent_types(tensor_type_pairs):
         (arr(2), Array[int, int]),
         (arr(2, 4), Array[A, A]),
         (arr(2, 1, 1), Array[A, B, A]),
+        (arr(1, 1, 2), Array[A, A, A]),
         (arr(2, 1, 1), Array[A, U[Ts], A]),
         (arr(1), Array[A, B, C]),
         ((arr(2, 4), Array[A, A]),),

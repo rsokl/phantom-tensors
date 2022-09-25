@@ -46,6 +46,7 @@ class Tensor(Generic[_te.Unpack[Shape]], _Tensor):
                 metaclass=_NewMeta,
                 predicate=lambda x: check(key, x.shape),
             ):
+                __origin__ = _Tensor
                 __args__ = key
 
             # if kk is not None:

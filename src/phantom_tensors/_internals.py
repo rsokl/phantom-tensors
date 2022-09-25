@@ -127,11 +127,14 @@ def check(shape_type: Tuple[ShapeDimType, ...], shape: Tuple[int, ...]) -> bool:
         _match_list.append(n if var_field_ind is None else n - len(shape_type))
 
     if var_field_ind is None and len(shape_type) != len(shape):
+        # E.g.      type: Tensor[A, B, C]
+        #      vs. shape: (1, 1)  or (1, 1, 1, 1)  # must have exactly 3 dim
         return False
 
-    if var_field_ind is not None:
-        if len(shape) < len(shape_type) - 1:
-            return False
+    if var_field_ind is not None and len(shape) < len(shape_type) - 1:
+        # E.g.      type: Tensor[A, *Ts, C]
+        #      vs. shape: (1,)  # should have at least 2 dim
+        return False
 
     _bindings = DimBinder.bindings
 
