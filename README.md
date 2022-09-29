@@ -55,7 +55,7 @@ func_on_3d(arr_3d)  # static type checker: OK
 func_on_any_arr(arr_3d)  # static type checker: OK
 ```
 
-Useful for performing **runtime checks of tensor types and shapes**. E.g.,
+And useful for performing **runtime checks of tensor types and shapes**. E.g.,
 
 ```python
 from typing import TypeVar, cast
