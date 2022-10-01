@@ -1,7 +1,14 @@
 # Phantom Tensors
 > Tensor types with variadic shapes, for any array-based library, that work with both static and runtime type checkers
 
-**This project is currently just a rough prototype! Inspired by (and uses): [phantom-types](https://github.com/antonagestam/phantom-types)**
+<p align="center">
+  <a href="https://pypi.python.org/pypi/phantom-tensors">
+    <img src="https://img.shields.io/pypi/v/phantom-tensors.svg" alt="PyPI" />
+  </a>
+</p>
+
+
+**This project is currently just a rough prototype! Inspired by: [phantom-types](https://github.com/antonagestam/phantom-types)**
 
 The goal of this project is to let users write tensor-like types with variadic shapes (via [PEP 646](https://peps.python.org/pep-0646/)) that are: 
 

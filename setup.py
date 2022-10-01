@@ -56,4 +56,7 @@ setup(
         "numpy": ["numpy>=1.21.0"],
         "beartype": ["beartype >= 0.10.4"],
     },
+    url="https://github.com/rsokl/phantom-tensors",
+    download_url="https://github.com/rsokl/phantom-tensors/tarball/v"
+    + versioneer.get_version(),
 )
