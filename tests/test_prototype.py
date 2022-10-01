@@ -4,6 +4,7 @@ from typing import Any, NewType, TypeVar
 import pytest
 from typing_extensions import Literal as L, TypeVarTuple, Unpack as U
 
+import phantom_tensors
 from phantom_tensors import dim_binding_scope, parse
 from phantom_tensors.array import SupportsArray as Array
 from phantom_tensors.errors import ParseError
@@ -14,6 +15,10 @@ Ts = TypeVarTuple("Ts")
 A = NewType("A", int)
 B = NewType("B", int)
 C = NewType("C", int)
+
+
+def test_version():
+    assert phantom_tensors.__version__ != "unknown"
 
 
 def test_parse_error_msg():

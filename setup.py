@@ -1,5 +1,7 @@
 from setuptools import find_packages, setup
 
+import versioneer
+
 DISTNAME = "phantom_tensors"
 LICENSE = "MIT"
 AUTHOR = "Ryan Soklaski"
@@ -36,7 +38,8 @@ LONG_DESCRIPTION = """The goal of this project is to let users write tensor-like
 
 setup(
     name=DISTNAME,
-    version="0.0.0",
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     license=LICENSE,
     author=AUTHOR,
     author_email=AUTHOR_EMAIL,
