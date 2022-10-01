@@ -22,7 +22,6 @@ INSTALL_REQUIRES = [
     "typing-extensions >= 4.1.0",
 ]
 TESTS_REQUIRE = [
-    "phantom-types >= 0.17.1",
     "beartype >= 0.10.4",
     "pytest >= 3.8",
     "hypothesis >= 6.28.0",
@@ -52,5 +51,6 @@ setup(
     extras_require={
         "torch": ["torch>=1.7.0"],
         "numpy": ["numpy>=1.21.0"],
+        "beartype": ["beartype >= 0.10.4"],
     },
 )
