@@ -32,6 +32,10 @@ class Ten_or_Eleven(int, Phantom, predicate=lambda x: 10 <= x <= 11):
     ...
 
 
+class EvenOnly(int, Phantom, predicate=lambda x: x % 2 == 0):
+    ...
+
+
 NewOneToThree = NewType("NewOneToThree", One_to_Three)
 
 
@@ -179,3 +183,60 @@ def test_isinstance_works():
 )
 def test_parse_consistent_types(tensor_type_pairs):
     parse(*tensor_type_pairs)
+
+
+def test_non_binding_subint_dims_pass():
+    parse(arr(2, 4, 6), Array[EvenOnly, EvenOnly, EvenOnly])
+    parse(
+        (arr(2, 4), Array[EvenOnly, EvenOnly]),
+        (arr(6, 8), Array[EvenOnly, EvenOnly]),
+    )
+
+
+def test_non_binding_subint_dims_validates():
+
+    with pytest.raises(
+        ParseError,
+        match=re.escape(
+            r"shape-(2, 1) doesn't match shape-type (EvenOnly=?, EvenOnly=?)"
+        ),
+    ):
+        parse(arr(2, 1), Array[EvenOnly, EvenOnly])
+
+    with pytest.raises(
+        ParseError,
+        match=re.escape(
+            r"shape-(6, 3) doesn't match shape-type (EvenOnly=?, EvenOnly=?)"
+        ),
+    ):
+        parse(
+            (arr(2, 4), Array[EvenOnly, EvenOnly]),
+            (arr(6, 3), Array[EvenOnly, EvenOnly]),
+        )
+
+
+def test_binding_validated_dims_validates():
+
+    with pytest.raises(
+        ParseError,
+        match=re.escape(
+            r"shape-(1, 2, 3) doesn't match shape-type (NewOneToThree=1, NewOneToThree=1, NewOneToThree=1)"
+        ),
+    ):
+        parse(arr(1, 2, 3), Array[NewOneToThree, NewOneToThree, NewOneToThree])
+
+    with pytest.raises(
+        ParseError,
+        match=re.escape(
+            r"shape-(1, 2) doesn't match shape-type (NewOneToThree=1, NewOneToThree=1)"
+        ),
+    ):
+        parse(
+            (arr(1, 1), Array[NewOneToThree, NewOneToThree]),
+            (arr(1, 2), Array[NewOneToThree, NewOneToThree]),
+        )
+
+
+@pytest.mark.parametrize("good_shape", [(1, 1), (2, 2), (3, 3)])
+def test_binding_validated_dims_passes(good_shape):
+    parse(arr(*good_shape), Array[NewOneToThree, NewOneToThree])
