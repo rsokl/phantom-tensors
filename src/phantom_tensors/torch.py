@@ -10,9 +10,8 @@ from typing import TYPE_CHECKING, Generic, Tuple
 
 import typing_extensions as _te
 
-from phantom import Phantom as _Phantom, PhantomMeta as _PhantomMeta
-
 from ._internals import check
+from ._utils import CustomInstanceCheck
 
 __all__ = ["Tensor"]
 
@@ -20,37 +19,32 @@ __all__ = ["Tensor"]
 Shape = _te.TypeVarTuple("Shape")
 
 
-class _NewMeta(_PhantomMeta, type(_Tensor)):
+class _NewMeta(CustomInstanceCheck, type(_Tensor)):
     ...
 
 
 class Tensor(Generic[_te.Unpack[Shape]], _Tensor):
     if not TYPE_CHECKING:
-        _cache = {}
+        # TODO: add caching
 
         @classmethod
         def __class_getitem__(cls, key):
             if not isinstance(key, tuple):
                 key = (key,)
 
-            # try:
-            #     kk = tuple(k.__name__ for k in key)
-            #     if kk in cls._cache:
-            #         return cls._cache[kk]
-            # except AttributeError:
-            #     kk = None
-
             class PhantomTensor(
                 _Tensor,
-                _Phantom,
                 metaclass=_NewMeta,
-                predicate=lambda x: check(key, x.shape),
             ):
                 __origin__ = _Tensor
                 __args__ = key
 
-            # if kk is not None:
-            #     cls._cache[kk] = PhantomTensor
+                @classmethod
+                def __instancecheck__(cls, __instance: object) -> bool:
+                    if not isinstance(__instance, _Tensor):
+                        return False
+                    return check(key, __instance.shape)
+
             return PhantomTensor
 
     @property

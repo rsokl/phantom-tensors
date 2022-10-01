@@ -1,5 +1,6 @@
 # pyright: strict
 
+import abc
 from typing import Any, Tuple, Type
 
 from typing_extensions import Literal, Protocol, TypeGuard, TypeVarTuple, Unpack
@@ -8,6 +9,11 @@ _Ts = TypeVarTuple("_Ts")
 
 UnpackType = type(Unpack[_Ts])  # type: ignore
 LiteralType = type(Literal[1])
+
+
+class CustomInstanceCheck(abc.ABCMeta):
+    def __instancecheck__(self, instance: object) -> bool:
+        return self.__instancecheck__(instance)
 
 
 class NewTypeLike(Protocol):

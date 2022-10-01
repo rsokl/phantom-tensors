@@ -9,9 +9,8 @@ from typing import TYPE_CHECKING, Any, Generic, Sequence, SupportsIndex, Tuple, 
 
 import typing_extensions as _te
 
-from phantom import Phantom as _Phantom
-
 from ._internals import check
+from ._utils import CustomInstanceCheck
 
 __all__ = ["NDArray"]
 
@@ -28,24 +27,22 @@ class NDArray(Generic[_te.Unpack[Shape]], _NDArray[Any]):
         def __class_getitem__(cls, key):
             if not isinstance(key, tuple):
                 key = (key,)
-            try:
-                kk = tuple(k.__name__ for k in key)
-                if kk in cls._cache:
-                    return cls._cache[kk]
-            except AttributeError:
-                kk = None
 
-            class PhantomTensor(
+            class PhantomNDArray(
                 _ndarray,
-                _Phantom,
-                predicate=lambda x: check(key, x.shape),
+                metaclass=CustomInstanceCheck,
             ):
+                __origin__ = _ndarray
+                # TODO: conform with ndarray[shape, dtype]
                 __args__ = key
 
-            if kk is not None:
-                cls._cache[kk] = PhantomTensor
+                @classmethod
+                def __instancecheck__(cls, __instance: object) -> bool:
+                    if not isinstance(__instance, _ndarray):
+                        return False
+                    return check(key, __instance.shape)
 
-            return PhantomTensor
+            return PhantomNDArray
 
     @property
     def shape(self) -> Tuple[_te.Unpack[Shape]]:  # type: ignore

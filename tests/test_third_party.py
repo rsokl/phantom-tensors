@@ -76,6 +76,14 @@ def test_parse_inconsistent_types(tensor_type_pairs):
         parse(*tensor_type_pairs)
 
 
+def test_phantom_checks():
+    assert not isinstance(np.ones((2,)), Tensor[int])  # type: ignore
+    assert not isinstance(tr.ones((2,)), NDArray[int])  # type: ignore
+
+    assert not isinstance(tr.ones((2, 2)), Tensor[int])  # type: ignore
+    assert not isinstance(np.ones((2, 2)), NDArray[int])  # type: ignore
+
+
 def test_type_var_with_beartype():
     @dim_binding_scope
     @beartype
