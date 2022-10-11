@@ -71,94 +71,121 @@ def _to_tuple(x: Ta | Tuple[Ta, ...]) -> Tuple[Ta, ...]:
     return x
 
 
-@overload
-def parse(
-    __a: Tuple[HasShape, Type[S1]],
-    __b: Tuple[HasShape, Type[S2]],
-    __c: Tuple[HasShape, Type[S3]],
-    __d: Tuple[HasShape, Type[S4]],
-    __e: Tuple[HasShape, Type[S5]],
-    __f: Tuple[HasShape, Type[S6]],
-) -> Tuple[S1, S2, S3, S4, S5, S6]:
-    ...
+class Parser:
+    @overload
+    def __call__(
+        self,
+        __a: Tuple[HasShape, Type[S1]],
+        __b: Tuple[HasShape, Type[S2]],
+        __c: Tuple[HasShape, Type[S3]],
+        __d: Tuple[HasShape, Type[S4]],
+        __e: Tuple[HasShape, Type[S5]],
+        __f: Tuple[HasShape, Type[S6]],
+    ) -> Tuple[S1, S2, S3, S4, S5, S6]:
+        ...
 
+    @overload
+    def __call__(
+        self,
+        __a: Tuple[HasShape, Type[S1]],
+        __b: Tuple[HasShape, Type[S2]],
+        __c: Tuple[HasShape, Type[S3]],
+        __d: Tuple[HasShape, Type[S4]],
+        __e: Tuple[HasShape, Type[S5]],
+    ) -> Tuple[S1, S2, S3, S4, S5]:
+        ...
 
-@overload
-def parse(
-    __a: Tuple[HasShape, Type[S1]],
-    __b: Tuple[HasShape, Type[S2]],
-    __c: Tuple[HasShape, Type[S3]],
-    __d: Tuple[HasShape, Type[S4]],
-    __e: Tuple[HasShape, Type[S5]],
-) -> Tuple[S1, S2, S3, S4, S5]:
-    ...
+    @overload
+    def __call__(
+        self,
+        __a: Tuple[HasShape, Type[S1]],
+        __b: Tuple[HasShape, Type[S2]],
+        __c: Tuple[HasShape, Type[S3]],
+        __d: Tuple[HasShape, Type[S4]],
+    ) -> Tuple[S1, S2, S3, S4]:
+        ...
 
+    @overload
+    def __call__(
+        self,
+        __a: Tuple[HasShape, Type[S1]],
+        __b: Tuple[HasShape, Type[S2]],
+        __c: Tuple[HasShape, Type[S3]],
+    ) -> Tuple[S1, S2, S3]:
+        ...
 
-@overload
-def parse(
-    __a: Tuple[HasShape, Type[S1]],
-    __b: Tuple[HasShape, Type[S2]],
-    __c: Tuple[HasShape, Type[S3]],
-    __d: Tuple[HasShape, Type[S4]],
-) -> Tuple[S1, S2, S3, S4]:
-    ...
+    @overload
+    def __call__(
+        self,
+        __a: HasShape,
+        __b: Type[S1],
+    ) -> S1:
+        ...
 
+    @overload
+    def __call__(
+        self,
+        __a: Tuple[HasShape, Type[S1]],
+        __b: Tuple[HasShape, Type[S2]],
+    ) -> Tuple[S1, S2]:
+        ...
 
-@overload
-def parse(
-    __a: Tuple[HasShape, Type[S1]],
-    __b: Tuple[HasShape, Type[S2]],
-    __c: Tuple[HasShape, Type[S3]],
-) -> Tuple[S1, S2, S3]:
-    ...
+    @overload
+    def __call__(self, __a: Tuple[HasShape, Type[S1]]) -> S1:
+        ...
 
+    @overload
+    def __call__(
+        self,
+        *tensor_type_pairs: Tuple[HasShape, Type[HasShape]] | HasShape | Type[HasShape],
+    ) -> HasShape | Tuple[HasShape, ...]:
+        ...
 
-@overload
-def parse(
-    __a: HasShape,
-    __b: Type[S1],
-) -> S1:
-    ...
+    @dim_binding_scope
+    def __call__(
+        self,
+        *tensor_type_pairs: Tuple[HasShape, Type[HasShape]] | HasShape | Type[HasShape],
+    ) -> HasShape | Tuple[HasShape, ...]:
+        if len(tensor_type_pairs) == 0:
+            raise ValueError("")
+        if len(tensor_type_pairs) == 2 and not isinstance(tensor_type_pairs[0], tuple):
+            tensor_type_pairs = (tensor_type_pairs,)  # type: ignore
 
+        pairs = cast(
+            Tuple[Tuple[HasShape, Type[HasShape]], ...], _to_tuple(tensor_type_pairs)
+        )
 
-@overload
-def parse(
-    __a: Tuple[HasShape, Type[S1]],
-    __b: Tuple[HasShape, Type[S2]],
-) -> Tuple[S1, S2]:
-    ...
+        out: List[HasShape] = []
 
+        del tensor_type_pairs
 
-@overload
-def parse(__a: Tuple[HasShape, Type[S1]]) -> S1:
-    ...
+        for tensor, type_ in pairs:
+            type_shape = self._get_shape_and_check_type(tensor=tensor, type_=type_)
 
+            if not check(type_shape, tensor.shape):
+                assert DimBinder.bindings is not None
+                type_str = ", ".join(
+                    (
+                        f"{getattr(p, '__name__', repr(p))}={DimBinder.bindings.get(p, '?')}"
+                        if not _utils.is_typevar_unpack(p)
+                        else "[...]"
+                    )
+                    for p in type_shape
+                )
+                if len(type_shape) == 1:
+                    # (A) -> (A,)
+                    type_str += ","
+                raise ParseError(
+                    f"shape-{tuple(tensor.shape)} doesn't match shape-type ({type_str})"
+                )
+            out.append(tensor)
+        if len(out) == 1:
+            return out[0]
+        return tuple(out)
 
-@overload
-def parse(
-    *tensor_type_pairs: Tuple[HasShape, Type[HasShape]] | HasShape | Type[HasShape]
-) -> HasShape | Tuple[HasShape, ...]:
-    ...
-
-
-@dim_binding_scope
-def parse(
-    *tensor_type_pairs: Tuple[HasShape, Type[HasShape]] | HasShape | Type[HasShape]
-) -> HasShape | Tuple[HasShape, ...]:
-    if len(tensor_type_pairs) == 0:
-        raise ValueError("")
-    if len(tensor_type_pairs) == 2 and not isinstance(tensor_type_pairs[0], tuple):
-        tensor_type_pairs = (tensor_type_pairs,)  # type: ignore
-
-    pairs = cast(
-        Tuple[Tuple[HasShape, Type[HasShape]], ...], _to_tuple(tensor_type_pairs)
-    )
-
-    out: List[HasShape] = []
-
-    del tensor_type_pairs
-
-    for tensor, type_ in pairs:
+    def _get_shape_and_check_type(
+        self, tensor: Any, type_: Union[_Phantom, _Generic, HasShape]
+    ):
         if hasattr(type_, "__origin__"):
             type_ = cast(_Generic, type_)
             type_shape = type_.__args__
@@ -179,31 +206,13 @@ def parse(
             type_shape = type_.__args__
         else:
             assert False
+        return type_shape
 
-        if not check(type_shape, tensor.shape):
-            assert DimBinder.bindings is not None
-            type_str = ", ".join(
-                (
-                    f"{getattr(p, '__name__', repr(p))}={DimBinder.bindings.get(p, '?')}"
-                    if not _utils.is_typevar_unpack(p)
-                    else "[...]"
-                )
-                for p in type_shape
-            )
-            if len(type_shape) == 1:
-                # (A) -> (A,)
-                type_str += ","
-            raise ParseError(
-                f"shape-{tuple(tensor.shape)} doesn't match shape-type ({type_str})"
-            )
-        out.append(tensor)
-    if len(out) == 1:
-        return out[0]
-    return tuple(out)
 
+parse = Parser()
 
 # @overload
-# def parse_ints(
+# def __call___ints(
 #     __a: Tuple[int, Type[I1]],
 #     __b: Tuple[int, Type[I2]],
 #     __c: Tuple[int, Type[I3]],
@@ -215,7 +224,7 @@ def parse(
 
 
 # @overload
-# def parse_ints(
+# def __call___ints(
 #     __a: Tuple[int, Type[I1]],
 #     __b: Tuple[int, Type[I2]],
 #     __c: Tuple[int, Type[I3]],
@@ -226,7 +235,7 @@ def parse(
 
 
 # @overload
-# def parse_ints(
+# def __call___ints(
 #     __a: Tuple[int, Type[I1]],
 #     __b: Tuple[int, Type[I2]],
 #     __c: Tuple[int, Type[I3]],
@@ -236,7 +245,7 @@ def parse(
 
 
 # @overload
-# def parse_ints(
+# def __call___ints(
 #     __a: Tuple[int, Type[I1]],
 #     __b: Tuple[int, Type[I2]],
 #     __c: Tuple[int, Type[I3]],
@@ -245,7 +254,7 @@ def parse(
 
 
 # @overload
-# def parse_ints(
+# def __call___ints(
 #     __a: int,
 #     __b: Type[I1],
 # ) -> I1:
@@ -253,7 +262,7 @@ def parse(
 
 
 # @overload
-# def parse_ints(
+# def __call___ints(
 #     __a: Tuple[int, Type[I1]],
 #     __b: Tuple[int, Type[I2]],
 # ) -> Tuple[I1, I2]:
@@ -261,25 +270,25 @@ def parse(
 
 
 # @overload
-# def parse_ints(__a: Tuple[int, Type[I1]]) -> I1:
+# def __call___ints(__a: Tuple[int, Type[I1]]) -> I1:
 #     ...
 
 
 # @overload
-# def parse_ints(
+# def __call___ints(
 #     *tensor_type_pairs: Tuple[int, Type[int]] | int | Type[int]
 # ) -> int | Tuple[int, ...]:
 #     ...
 
 
 # @dim_binding_scope
-# def parse_ints(
+# def __call___ints(
 #     *tensor_type_pairs: Tuple[int, Type[int]] | int | Type[int]
 # ) -> int | Tuple[int, ...]:
 #     ...
 
 # @overload
-# def parse_tuples(
+# def __call___tuples(
 #     __a: Tuple[TupleInt, Type[Tuple[U[Ts1]]]],
 #     __b: Tuple[TupleInt, Type[Tuple[U[Ts2]]]],
 #     __c: Tuple[TupleInt, Type[Tuple[U[Ts3]]]],
@@ -298,7 +307,7 @@ def parse(
 
 
 # @overload
-# def parse_tuples(
+# def __call___tuples(
 #     __a: Tuple[TupleInt, Type[Tuple[U[Ts1]]]],
 #     __b: Tuple[TupleInt, Type[Tuple[U[Ts2]]]],
 #     __c: Tuple[TupleInt, Type[Tuple[U[Ts3]]]],
@@ -309,7 +318,7 @@ def parse(
 
 
 # @overload
-# def parse_tuples(
+# def __call___tuples(
 #     __a: Tuple[TupleInt, Type[Tuple[U[Ts1]]]],
 #     __b: Tuple[TupleInt, Type[Tuple[U[Ts2]]]],
 #     __c: Tuple[TupleInt, Type[Tuple[U[Ts3]]]],
@@ -319,7 +328,7 @@ def parse(
 
 
 # @overload
-# def parse_tuples(
+# def __call___tuples(
 #     __a: Tuple[TupleInt, Type[Tuple[U[Ts1]]]],
 #     __b: Tuple[TupleInt, Type[Tuple[U[Ts2]]]],
 #     __c: Tuple[TupleInt, Type[Tuple[U[Ts3]]]],
@@ -328,7 +337,7 @@ def parse(
 
 
 # @overload
-# def parse_tuples(
+# def __call___tuples(
 #     __a: TupleInt,
 #     __b: T1,
 # ) -> T1:
@@ -336,7 +345,7 @@ def parse(
 
 
 # @overload
-# def parse_tuples(
+# def __call___tuples(
 #     __a: TupleInt,
 #     __b: Type[Tuple[U[Ts1]]],
 # ) -> Tuple[U[Ts1]]:
@@ -344,7 +353,7 @@ def parse(
 
 
 # @overload
-# def parse_tuples(
+# def __call___tuples(
 #     __a: Tuple[TupleInt, Type[Tuple[U[Ts1]]]],
 #     __b: Tuple[TupleInt, Type[Tuple[U[Ts2]]]],
 # ) -> Tuple[Tuple[U[Ts1]], Tuple[U[Ts2]]]:
@@ -352,12 +361,12 @@ def parse(
 
 
 # @overload
-# def parse_tuples(__a: Tuple[TupleInt, Type[Tuple[U[Ts1]]]]) -> Tuple[U[Ts1]]:
+# def __call___tuples(__a: Tuple[TupleInt, Type[Tuple[U[Ts1]]]]) -> Tuple[U[Ts1]]:
 #     ...
 
 
 # @overload
-# def parse_tuples(
+# def __call___tuples(
 #     *tensor_type_pairs: Tuple[TupleInt, Type[Tuple[Any, ...]]]
 #     | TupleInt
 #     | Type[Tuple[Any, ...]]
@@ -366,7 +375,7 @@ def parse(
 
 
 # @dim_binding_scope
-# def parse_tuples(
+# def __call___tuples(
 #     *tensor_type_pairs: Tuple[TupleInt, Type[Tuple[Any, ...]]]
 #     | TupleInt
 #     | Type[Tuple[Any, ...]]
