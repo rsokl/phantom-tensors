@@ -1,0 +1,223 @@
+[build-system]
+requires = [
+       "setuptools >= 35.0.2",
+       "wheel >= 0.29.0",
+       "setuptools_scm[toml]==7.0.5",
+]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "phantom_tensors"
+dynamic = ["version"]
+description = "Configurable, reproducible, and scalable workflows in Python, via Hydra"
+readme = "README.md"
+requires-python = ">=3.7"
+dependencies = ["typing-extensions >= 4.1.0"]
+license = { text = "MIT" }
+keywords = [
+       "machine learning",
+       "research",
+       "configuration",
+       "scalable",
+       "reproducible",
+       "yaml",
+       "Hydra",
+       "dataclass",
+]
+
+authors = [
+       { name = "Ryan Soklaski", email = "rsoklaski@gmail.com" },
+       { name = "Justin Goodwin", email = "jgoodwin@ll.mit.edu" },
+]
+maintainers = [{ name = "Justin Goodwin", email = "jgoodwin@ll.mit.edu" }]
+
+classifiers = [
+       "Development Status :: 4 - Beta",
+       "License :: OSI Approved :: MIT License",
+       "Operating System :: OS Independent",
+       "Intended Audience :: Science/Research",
+       "Programming Language :: Python :: 3.7",
+       "Programming Language :: Python :: 3.8",
+       "Programming Language :: Python :: 3.9",
+       "Programming Language :: Python :: 3.10",
+       "Programming Language :: Python :: 3.11",
+       "Topic :: Scientific/Engineering",
+       "Programming Language :: Python :: 3 :: Only",
+]
+
+[project.optional-dependencies]
+test = ["beartype >= 0.10.4", "pytest >= 3.8", "hypothesis >= 6.28.0"]
+
+
+[project.urls]
+"Homepage" = "https://github.com/rsokl/phantom-tensors/"
+"Bug Reports" = "https://github.com/rsokl/phantom-tensors/issues"
+"Source" = "https://github.com/rsokl/phantom-tensors"
+
+
+[tool.setuptools_scm]
+write_to = "src/phantom_tensors/_version.py"
+version_scheme = "no-guess-dev"
+
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+exclude = ["tests*", "tests.*"]
+
+[tool.setuptools.package-data]
+phantom_tensors = ["py.typed"]
+
+
+[tool.isort]
+known_first_party = ["phantom_tensors", "tests"]
+profile = "black"
+combine_as_imports = true
+
+
+[tool.coverage.run]
+branch = true
+omit = ["tests/test_docs_typecheck.py"]
+
+[tool.coverage.report]
+omit = ["src/phantom_tensors/_version.py"]
+exclude_lines = [
+       'pragma: no cover',
+       'def __repr__',
+       'raise NotImplementedError',
+       'class .*\bProtocol(\[.+\])?\):',
+       '@(abc\.)?abstractmethod',
+       '@(typing\.)?overload',
+       'except ImportError:',
+       'except ModuleNotFoundError:',
+       'if (typing\.)?TYPE_CHECKING:',
+       'if sys\.version_info',
+]
+
+[tool.pytest.ini_options]
+xfail_strict = true
+
+
+[tool.pyright]
+include = ["src"]
+exclude = [
+       "**/node_modules",
+       "**/__pycache__",
+       "src/phantom_tensors/_version.py",
+       "**/third_party",
+]
+reportUnnecessaryTypeIgnoreComment = true
+reportUnnecessaryIsInstance = false
+
+
+[tool.codespell]
+skip = 'docs/build/*'
+
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+isolated_build = True
+envlist = py37, py38, py39, py310, py311
+
+[gh-actions]
+python =
+  3.7: py37
+  3.8: py38
+  3.9: py39
+  3.10: py310
+  3.11: py311
+
+[testenv]
+description = Runs test suite parallelized in the specified python enviornment and 
+              against number of available processes (up to 4). 
+              Run `tox -e py39 -- -n 0` to run tests in a python 3.9 with 
+              parallelization disabled.
+passenv = *
+extras = test
+deps = pytest-xdist
+commands = pytest tests/ {posargs: -n auto --maxprocesses=4}
+
+
+[testenv:coverage]
+description = Runs test suite and measures test-coverage. Fails if coverage is 
+              below 100 prcnt. Run `tox -e coverage -- -n 0` to disable parallelization.
+setenv = NUMBA_DISABLE_JIT=1
+usedevelop = true
+basepython = python3.10
+deps = {[testenv]deps}
+       coverage[toml]
+       pytest-cov
+       beartype
+       torch
+       numpy
+       phantom-types
+commands = pytest --cov-report term-missing --cov-config=pyproject.toml --cov-fail-under=100 --cov=phantom_tensors tests {posargs: -n auto --maxprocesses=4}
+
+
+[testenv:third-party]
+description = Runs test suite against optional 3rd party packages that phantom-tensors 
+              provides specialized support for.
+install_command = pip install --upgrade --upgrade-strategy eager {opts} {packages}
+basepython = python3.9
+deps = {[testenv]deps}
+       beartype
+       torch
+       numpy
+       phantom-types
+
+
+[testenv:pyright]
+description = Ensure that phantom-tensors's source code and test suite scan clean
+              under pyright, and that phantom-tensors's public API has a 100 prcnt
+              type-completeness score.
+usedevelop = true
+basepython = python3.9
+deps = 
+       --requirement deps/requirements-pyright.txt
+       beartype
+       torch
+       numpy
+       phantom-types
+
+commands = pyright --lib tests/ src/ --pythonversion=3.8
+           pyright --lib tests/ src/ --pythonversion=3.9
+           pyright --lib tests/ src/ --pythonversion=3.10
+           pyright --lib tests/ src/ --pythonversion=3.11
+           pyright --ignoreexternal --verifytypes phantom_tensors
+
+
+[testenv:format]
+description = Applies auto-flake (e.g. remove unsused imports), black, and isort 
+              in-place on source files and test suite. Running this can help fix a 
+              failing `enforce-format` run.
+skip_install=true
+deps =
+    autoflake
+    black
+    isort
+commands =
+    autoflake --recursive --in-place --remove-duplicate-keys --remove-unused-variables src/ tests/
+    isort src/ tests/
+    black src/ tests/
+
+
+[testenv:enforce-format]
+description = Ensures that source materials code and docs and test suite adhere to 
+              formatting and code-quality standards.
+skip_install=true
+basepython=python3.9
+deps=black
+     isort
+     flake8
+     pytest
+     codespell
+commands=
+    black src/ tests/ --diff --check
+    isort src/ tests/ --diff --check
+    flake8 src/ tests/
+    codespell src/ docs/
+"""
