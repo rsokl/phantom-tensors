@@ -75,7 +75,7 @@ jobs:
         path: .tox
         key: tox-third-party-${{ hashFiles('pyproject.toml') }}-${{ hashFiles('setup.py') }}-${{ hashFiles('.github/workflows/tox.yml') }}
     - name: Test with tox
-      run: tox -e pyright --pythonversion=3.8
-           tox -e pyright --pythonversion=3.9
-           tox -e pyright --pythonversion=3.10
-           tox -e pyright --pythonversion=3.11
+      run: tox -e pyright -- --pythonversion=3.8
+           tox -e pyright -- --pythonversion=3.9
+           tox -e pyright -- --pythonversion=3.10
+           tox -e pyright -- --pythonversion=3.11
