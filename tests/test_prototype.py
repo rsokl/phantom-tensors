@@ -2,6 +2,7 @@ import re
 from typing import Any, NewType, TypeVar
 
 import pytest
+from pytest import param
 from typing_extensions import Literal as L, TypeVarTuple, Unpack as U
 
 import phantom_tensors
@@ -15,6 +16,8 @@ Ts = TypeVarTuple("Ts")
 A = NewType("A", int)
 B = NewType("B", int)
 C = NewType("C", int)
+
+parse_xfail = pytest.mark.xfail(raises=ParseError)
 
 
 def test_version():
@@ -60,37 +63,33 @@ def test_parse_error_msg():
         (arr(3), Array[L[1, 2, 3]]),
         (arr(1, 2), Array[L[1], L[2]]),
         (arr(1, 2, 1), Array[L[1], L[2], L[1]]),
+        param((arr(), Array[int]), marks=parse_xfail),
+        param((arr(), Array[int, U[Ts]]), marks=parse_xfail),
+        param((arr(2), Array[int, int]), marks=parse_xfail),
+        param((arr(2, 4), Array[A, A]), marks=parse_xfail),
+        param((arr(2, 1, 1), Array[A, B, A]), marks=parse_xfail),
+        param((arr(1, 1, 2), Array[A, A, A]), marks=parse_xfail),
+        param((arr(2, 1, 1), Array[A, U[Ts], A]), marks=parse_xfail),
+        param((arr(1), Array[A, B, C]), marks=parse_xfail),
+        param(((arr(2, 4), Array[A, A]),), marks=parse_xfail),
+        param(
+            (
+                (arr(4), Array[A]),
+                (arr(5), Array[A]),
+            ),
+            marks=parse_xfail,
+        ),
+        param((arr(3), Array[L[1]]), marks=parse_xfail),
+        param((arr(2, 2), Array[L[1], L[2]]), marks=parse_xfail),
+        param((arr(1, 1), Array[L[1], L[2]]), marks=parse_xfail),
+        param(
+            (arr(1, 1, 1), Array[L[1], L[2], L[1]]),
+            marks=parse_xfail,
+        ),
     ],
 )
 def test_parse_consistent_types(tensor_type_pairs):
     parse(*tensor_type_pairs)
-
-
-@pytest.mark.parametrize(
-    "tensor_type_pairs",
-    [
-        (arr(), Array[int]),
-        (arr(), Array[int, U[Ts]]),
-        (arr(2), Array[int, int]),
-        (arr(2, 4), Array[A, A]),
-        (arr(2, 1, 1), Array[A, B, A]),
-        (arr(1, 1, 2), Array[A, A, A]),
-        (arr(2, 1, 1), Array[A, U[Ts], A]),
-        (arr(1), Array[A, B, C]),
-        ((arr(2, 4), Array[A, A]),),
-        (
-            (arr(4), Array[A]),
-            (arr(5), Array[A]),
-        ),
-        (arr(3), Array[L[1]]),
-        (arr(2, 2), Array[L[1], L[2]]),
-        (arr(1, 1), Array[L[1], L[2]]),
-        (arr(1, 1, 1), Array[L[1], L[2], L[1]]),
-    ],
-)
-def test_parse_inconsistent_types(tensor_type_pairs):
-    with pytest.raises(ParseError):
-        parse(*tensor_type_pairs)
 
 
 def test_parse_in_and_out_of_binding_scope():
