@@ -183,7 +183,7 @@ deps =
        numpy
        phantom-types
 
-commands = pyright --lib tests/annotations.py src/
+commands = pyright --lib tests/ src/
            pyright --ignoreexternal --verifytypes phantom_tensors
 
 

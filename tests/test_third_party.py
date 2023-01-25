@@ -4,14 +4,14 @@ from typing import NewType, TypeVar, cast
 import numpy as np
 import pytest
 import torch as tr
-from beartype import beartype  # type: ignore
+from beartype import beartype
 from beartype.roar import (
     BeartypeCallHintParamViolation,
     BeartypeCallHintReturnViolation,
 )
+from phantom import Phantom
 from typing_extensions import TypeVarTuple, Unpack as U
 
-from phantom import Phantom
 from phantom_tensors import dim_binding_scope, parse
 from phantom_tensors.alphabet import A, B, C
 from phantom_tensors.array import SupportsArray as Array
