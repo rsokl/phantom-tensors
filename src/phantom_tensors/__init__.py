@@ -2,8 +2,9 @@
 
 from typing import TYPE_CHECKING
 
-from ._internals import dim_binding_scope
-from ._parse import parse
+from phantom_tensors._internals.dim_binding import dim_binding_scope
+
+from .parse import parse
 
 __all__ = ["parse", "dim_binding_scope"]
 

@@ -5,10 +5,14 @@ from typing import Any, List, Tuple, Type, TypeVar, Union, cast, overload
 
 from typing_extensions import ClassVar, Protocol, TypeAlias, TypeVarTuple
 
-import phantom_tensors._utils as _utils
-
-from ._internals import DimBinder, ShapeDimType, check, dim_binding_scope
-from .errors import ParseError
+from phantom_tensors._internals import utils as _utils
+from phantom_tensors._internals.dim_binding import (
+    DimBinder,
+    ShapeDimType,
+    check,
+    dim_binding_scope,
+)
+from phantom_tensors.errors import ParseError
 
 __all__ = ["parse"]
 
