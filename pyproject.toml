@@ -165,6 +165,8 @@ install_command = pip install --upgrade --upgrade-strategy eager {opts} {package
 basepython = python3.9
 deps = {[testenv]deps}
        beartype
+       torch
+       numpy
        phantom-types
 
 
