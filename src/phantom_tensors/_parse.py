@@ -72,6 +72,48 @@ def _to_tuple(x: Ta | Tuple[Ta, ...]) -> Tuple[Ta, ...]:
 
 
 class Parser:
+    def get_shape_and_concrete_type(
+        self, type_: Union[_Phantom, _Generic, HasShape]
+    ) -> Tuple[Tuple[ShapeDimType, ...], Union[type, Tuple[type, ...]]]:
+        """
+        Extracts the concrete base type(s) and shape-type from a generic tensor type.
+
+        Overwrite this method to add support for different varieties of
+        generic tensor types.
+
+        Parameters
+        ----------
+        tensor : Any
+            The tensor whose type/shape is being checked.
+
+        type_ : Any
+            The tensor-type that contains the shape information to
+            be extracted.
+
+        Returns
+        -------
+        Tuple[type | Tuple[type, ...]], Tuple[ShapeDimType, ...]]
+
+        Examples
+        --------
+        >>> from phantom_tensors import parse
+        >>> from phantom_tensors.numpy import NDArray
+        >>> parse.get_shape_and_concrete_type(NDArray[int, int])
+        (numpy.ndarray, (int, int))
+        """
+        if hasattr(type_, "__origin__"):
+            type_ = cast(_Generic, type_)
+            type_shape = type_.__args__
+            base_type = type_.__origin__
+
+        elif hasattr(type_, "__bound__"):
+            type_ = cast(_Phantom, type_)
+            type_shape = type_.__args__
+            base_type = type_.__bound__
+        else:
+            assert False
+        return type_shape, base_type
+
     @overload
     def __call__(
         self,
@@ -160,7 +202,10 @@ class Parser:
         del tensor_type_pairs
 
         for tensor, type_ in pairs:
-            type_shape = self._get_shape_and_check_type(tensor=tensor, type_=type_)
+            type_shape, expected_type = self.get_shape_and_concrete_type(type_=type_)
+
+            if not isinstance(tensor, expected_type):
+                raise ParseError(f"Expected {expected_type}, got: {type(tensor)}")
 
             if not check(type_shape, tensor.shape):
                 assert DimBinder.bindings is not None
@@ -182,31 +227,6 @@ class Parser:
         if len(out) == 1:
             return out[0]
         return tuple(out)
-
-    def _get_shape_and_check_type(
-        self, tensor: Any, type_: Union[_Phantom, _Generic, HasShape]
-    ):
-        if hasattr(type_, "__origin__"):
-            type_ = cast(_Generic, type_)
-            type_shape = type_.__args__
-            if not isinstance(tensor, type_.__origin__):
-                raise ParseError(f"Expected {type_.__origin__}, got: {type(tensor)}")
-
-        elif hasattr(type_, "__bound__"):
-            # Todo: remove phantom type logic
-            type_ = cast(_Phantom, type_)
-
-            if not isinstance(tensor, type_.__bound__):
-                if isinstance(type_.__bound__, tuple):
-                    tp, *_ = type_.__bound__
-                else:
-                    tp = type_.__bound__
-                raise ParseError(f"Expected {tp}, got: {type(tensor)}")
-
-            type_shape = type_.__args__
-        else:
-            assert False
-        return type_shape
 
 
 parse: Parser = Parser()
