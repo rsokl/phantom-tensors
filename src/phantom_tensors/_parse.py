@@ -209,7 +209,7 @@ class Parser:
         return type_shape
 
 
-parse = Parser()
+parse: Parser = Parser()
 
 # @overload
 # def __call___ints(
