@@ -218,8 +218,8 @@ def check_phantom_example():
     from typing import Any
 
     import torch as tr
-
     from phantom import Phantom
+
     from phantom_tensors import parse
     from phantom_tensors.torch import Tensor
 
@@ -397,20 +397,20 @@ def check_beartype_example():
 
 
 # def check_bad_int_parse(x: tr.Tensor, y: tuple[int, ...], z: int):
-#     parse_ints(x, A)  # type: ignore
-#     parse_ints(y, A)  # type: ignore
-#     parse_ints((x, A))  # type: ignore
-#     parse_ints((y, A))  # type: ignore
+#     parse_ints(x, A)
+#     parse_ints(y, A)
+#     parse_ints((x, A))
+#     parse_ints((y, A))
 
-#     parse_ints(z, tuple[A])  # type: ignore
-#     parse_ints(z, Tensor[A])  # type: ignore
+#     parse_ints(z, tuple[A])
+#     parse_ints(z, Tensor[A])
 
 # def check_bad_tuple_parse(x: tr.Tensor, y: tuple[int, ...], z: int):
-#     parse_tuples(x, tuple[A])  # type: ignore
-#     parse_tuples(z, tuple[A])  # type: ignore
+#     parse_tuples(x, tuple[A])
+#     parse_tuples(z, tuple[A])
 
-#     parse_tuples((x, tuple[A]))  # type: ignore
-#     parse_tuples((z, tuple[A]))  # type: ignore
+#     parse_tuples((x, tuple[A]))
+#     parse_tuples((z, tuple[A]))
 
-#     parse_ints(y, A)  # type: ignore
-#     parse_ints(y, Tensor[A])  # type: ignore
+#     parse_ints(y, A)
+#     parse_ints(y, Tensor[A])

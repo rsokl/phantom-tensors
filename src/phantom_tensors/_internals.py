@@ -32,12 +32,12 @@ class DimBinder:
 class DimBindContext:
     _depth: int = 0
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         self._depth += 1
         if self._depth == 1:
             DimBinder.bindings = {}
 
-    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any):
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         self._depth -= 1
         if self._depth == 0:
             DimBinder.bindings = None
@@ -51,7 +51,7 @@ class DimBindContext:
         return cast(F, wrapper)
 
 
-dim_binding_scope = DimBindContext()
+dim_binding_scope: DimBindContext = DimBindContext()
 
 
 def check(shape_type: Tuple[ShapeDimType, ...], shape: Tuple[int, ...]) -> bool:
