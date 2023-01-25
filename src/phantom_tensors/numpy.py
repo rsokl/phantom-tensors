@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING, Any, Generic, Sequence, SupportsIndex, Tuple, 
 
 import typing_extensions as _te
 
-from ._internals import check
-from ._utils import CustomInstanceCheck
+from ._internals.dim_binding import check
+from .meta import CustomInstanceCheck
 
 __all__ = ["NDArray"]
 

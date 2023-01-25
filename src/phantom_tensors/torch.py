@@ -10,8 +10,8 @@ from typing import TYPE_CHECKING, Generic, Tuple
 
 import typing_extensions as _te
 
-from ._internals import check
-from ._utils import CustomInstanceCheck
+from phantom_tensors._internals.dim_binding import check
+from phantom_tensors.meta import CustomInstanceCheck
 
 __all__ = ["Tensor"]
 

@@ -7,8 +7,8 @@ from typing import Any, Callable, Iterable, Optional, Tuple, Type, TypeVar, Unio
 
 from typing_extensions import Final, TypeAlias
 
-import phantom_tensors._utils as _utils
-from phantom_tensors._utils import LiteralLike, NewTypeLike, UnpackLike
+import phantom_tensors._internals.utils as _utils
+from phantom_tensors._internals.utils import LiteralLike, NewTypeLike, UnpackLike
 
 ShapeDimType: TypeAlias = Union[
     Type[int],
