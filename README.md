@@ -16,7 +16,7 @@ The goal of this project is to let users write tensor-like types with variadic s
 - Useful for performing **runtime checks of tensor types and shapes**. 
     > E.g.,  can validate -- at runtime -- that arrays of types `NDArray[A, B]` and `NDArray[B, A]` indeed have transposed shapes with respect with each other.
 - Compatible with *any* array-based library (numpy, pytorch, xarray, cupy, mygrad, etc.)
-    > E.g. A function annotated with `x: torch.Tensor` can be passed `phantom_tensors.torch.Tensor[N, B, D]`, and it is trivial to write custom phantom-tensor flavored types for any array-based library.
+    > E.g. A function annotated with `x: torch.Tensor` can be passed `phantom_tensors.torch.Tensor[N, B, D]`. It is trivial to write custom phantom-tensor flavored types for any array-based library.
 
 `phantom_tensors.parse` makes it easy to declare shaped tensor types in a way that static type checkers understand, and that are validated at runtime:
 
