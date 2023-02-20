@@ -121,6 +121,16 @@ z = buggy_matmul(x, y)  # Runtime validation error!
 
 ```
 
+Write easy-to-understand interfaces using common dimension names (or make up your own):
+
+```python
+from phantom_tensors.torch import Tensor
+from phantom_tensors.words import Batch, Embed, Vocab
+
+def embedder(x: Tensor[Batch, Vocab]) -> Tensor[Batch, Embed]:
+    ...
+```
+
 ## Installation
 
 ```shell
