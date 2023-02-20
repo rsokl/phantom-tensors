@@ -90,6 +90,7 @@ from beartype import beartype
 
 from phantom_tensors import dim_binding_scope, parse
 from phantom_tensors.torch import Tensor
+from phantom_tensors.alphabet import A, B, C
 
 T1 = TypeVar("T1")
 T2 = TypeVar("T2")
@@ -110,11 +111,9 @@ x, y = parse(
     (tr.ones(3, 4), Tensor[A, B]),
     (tr.ones(4, 5), Tensor[B, C]),
 )
-x  # static type checker sees: Tensor[A, B]
-y  # static type checker sees: Tensor[B, C]
 
 # At runtime beartype raises:
-#   Function should return shape-(T1, T3) but returned shape-(T1, T1)
+#   Function should return shape-(A, C) but returned shape-(A, A)
 z = buggy_matmul(x, y)  # Runtime validation error!
 
 ```
