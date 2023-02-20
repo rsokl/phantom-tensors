@@ -89,8 +89,6 @@ import torch as tr
 from beartype import beartype
 
 from phantom_tensors import dim_binding_scope, parse
-# These are just convenient NewType(..., int) definitions
-from phantom_tensors.alphabet import A, B, C
 from phantom_tensors.torch import Tensor
 
 T1 = TypeVar("T1")
