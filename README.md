@@ -27,7 +27,8 @@ A = NewType("A", int)
 B = NewType("B", int)
 
 # runtime: checks that shapes (2, 3) and (3, 2)
-#          match (A, B) and (B, A) pattern
+#          match (A, B) and (B, A) pattern across
+#          tensors
 x, y = parse(
     (np.ones((2, 3)), NDArray[A, B]),
     (np.ones((3, 2)), NDArray[B, A]),
@@ -204,10 +205,11 @@ from typing_extensions import Unpack as U, TypeVarTuple, Literal as L
 
 Ts = TypeVarTuple("Ts")
 
-parse(tr.ones(1, 3), Tensor[L[1], U[Ts], L[3]])  # OK
-parse(tr.ones(1, 0, 0, 0, 3), Tensor[L[1], U[Ts], L[3]])  # OK
+# U[Ts] represents an arbitrary number of entries
+parse(tr.ones(1, 3), Tensor[L[1], U[Ts], L[3]])  # static + runtime: OK
+parse(tr.ones(1, 0, 0, 0, 3), Tensor[L[1], U[Ts], L[3]])  # static + runtime: OK
 
-parse(tr.ones(3, 0, 0, 0, 3), Tensor[L[1], U[Ts], L[3]])  # ParseError
+parse(tr.ones(3, 0, 3), Tensor[L[1], U[Ts], L[3]])  # Runtime: ParseError
 ```
 
 Supports phatom type dimensions (i.e. `int` subclasses that override `__isinstance__` checks):
@@ -225,7 +227,7 @@ parse(tr.ones(1, 0), Tensor[int, EvenOnly])  # static return type: Tensor[int, E
 parse(tr.ones(1, 2), Tensor[int, EvenOnly])  # static return type: Tensor[int, EvenOnly] 
 parse(tr.ones(1, 4), Tensor[int, EvenOnly])  # static return type: Tensor[int, EvenOnly] 
 
-parse(tr.ones(1, 3), Tensor[int, EvenOnly])  # runtime: ParseError
+parse(tr.ones(1, 3), Tensor[int, EvenOnly])  # runtime: ParseError (3 is not an even number)
 ```
 
 
