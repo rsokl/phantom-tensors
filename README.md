@@ -79,7 +79,19 @@ func_on_3d(arr_3d)  # static type checker: OK
 func_on_any_arr(arr_3d)  # static type checker: OK
 ```
 
-Using a runtime type checker, such as [beartype](https://github.com/beartype/beartype), in conjunction with `phantom_tensors` means that the typed shape information will be validated at runtime across a function's inputs and outputs, whenever that function is called.
+
+Write easy-to-understand interfaces using common dimension names (or make up your own):
+
+```python
+from phantom_tensors.torch import Tensor
+from phantom_tensors.words import Batch, Embed, Vocab
+
+def embedder(x: Tensor[Batch, Vocab]) -> Tensor[Batch, Embed]:
+    ...
+```
+
+
+Using a runtime type checker, such as [beartype](https://github.com/beartype/beartype) or [typeguard](https://github.com/agronholm/typeguard), in conjunction with `phantom_tensors` means that the typed shape information will be validated at runtime across a function's inputs and outputs, whenever that function is called.
 
 ```python
 from typing import TypeVar, cast
@@ -116,16 +128,6 @@ x, y = parse(
 #   Function should return shape-(A, C) but returned shape-(A, A)
 z = buggy_matmul(x, y)  # Runtime validation error!
 
-```
-
-Write easy-to-understand interfaces using common dimension names (or make up your own):
-
-```python
-from phantom_tensors.torch import Tensor
-from phantom_tensors.words import Batch, Embed, Vocab
-
-def embedder(x: Tensor[Batch, Vocab]) -> Tensor[Batch, Embed]:
-    ...
 ```
 
 ## Installation
