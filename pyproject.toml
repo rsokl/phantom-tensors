@@ -175,7 +175,7 @@ description = Ensure that phantom-tensors's source code and test suite scan clea
               under pyright, and that phantom-tensors's public API has a 100 prcnt
               type-completeness score.
 usedevelop = true
-basepython = python3.9
+basepython = python3.10
 deps = 
        --requirement deps/requirements-pyright.txt
        beartype
