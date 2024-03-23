@@ -116,7 +116,7 @@ def check(shape_type: Tuple[ShapeDimType, ...], shape: Tuple[int, ...]) -> bool:
                         f"int or subclass of int. shape-type {shape_type} contains a "
                         f"NewType of supertype {_supertype}"
                     )
-                validators[dim_symbol] = lambda x, sp=_supertype: isinstance(x, sp)  # type: ignore
+                validators[dim_symbol] = lambda x, sp=_supertype: isinstance(x, sp)
             _match_list.append(CURRENT_INDEX)
             del _supertype
         elif isinstance(dim_symbol, TypeVar):
@@ -131,7 +131,7 @@ def check(shape_type: Tuple[ShapeDimType, ...], shape: Tuple[int, ...]) -> bool:
             del _expected_literals
 
         elif isinstance(dim_symbol, type) and issubclass(dim_symbol, int):
-            validators[dim_symbol] = lambda x, type_=dim_symbol: isinstance(x, type_)  # type: ignore
+            validators[dim_symbol] = lambda x, type_=dim_symbol: isinstance(x, type_)
             _validate_list.append(CURRENT_INDEX)
         else:
             raise TypeError(

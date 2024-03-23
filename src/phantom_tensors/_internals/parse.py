@@ -33,8 +33,7 @@ class _Phantom(Protocol):
 
 class HasShape(Protocol):
     @property
-    def shape(self) -> Any:
-        ...
+    def shape(self) -> Any: ...
 
 
 TupleInt: TypeAlias = Tuple[int, ...]
@@ -127,8 +126,7 @@ class Parser:
         __d: Tuple[HasShape, Type[S4]],
         __e: Tuple[HasShape, Type[S5]],
         __f: Tuple[HasShape, Type[S6]],
-    ) -> Tuple[S1, S2, S3, S4, S5, S6]:
-        ...
+    ) -> Tuple[S1, S2, S3, S4, S5, S6]: ...
 
     @overload
     def __call__(
@@ -138,8 +136,7 @@ class Parser:
         __c: Tuple[HasShape, Type[S3]],
         __d: Tuple[HasShape, Type[S4]],
         __e: Tuple[HasShape, Type[S5]],
-    ) -> Tuple[S1, S2, S3, S4, S5]:
-        ...
+    ) -> Tuple[S1, S2, S3, S4, S5]: ...
 
     @overload
     def __call__(
@@ -148,8 +145,7 @@ class Parser:
         __b: Tuple[HasShape, Type[S2]],
         __c: Tuple[HasShape, Type[S3]],
         __d: Tuple[HasShape, Type[S4]],
-    ) -> Tuple[S1, S2, S3, S4]:
-        ...
+    ) -> Tuple[S1, S2, S3, S4]: ...
 
     @overload
     def __call__(
@@ -157,35 +153,30 @@ class Parser:
         __a: Tuple[HasShape, Type[S1]],
         __b: Tuple[HasShape, Type[S2]],
         __c: Tuple[HasShape, Type[S3]],
-    ) -> Tuple[S1, S2, S3]:
-        ...
+    ) -> Tuple[S1, S2, S3]: ...
 
     @overload
     def __call__(
         self,
         __a: HasShape,
         __b: Type[S1],
-    ) -> S1:
-        ...
+    ) -> S1: ...
 
     @overload
     def __call__(
         self,
         __a: Tuple[HasShape, Type[S1]],
         __b: Tuple[HasShape, Type[S2]],
-    ) -> Tuple[S1, S2]:
-        ...
+    ) -> Tuple[S1, S2]: ...
 
     @overload
-    def __call__(self, __a: Tuple[HasShape, Type[S1]]) -> S1:
-        ...
+    def __call__(self, __a: Tuple[HasShape, Type[S1]]) -> S1: ...
 
     @overload
     def __call__(
         self,
         *tensor_type_pairs: Tuple[HasShape, Type[HasShape]] | HasShape | Type[HasShape],
-    ) -> HasShape | Tuple[HasShape, ...]:
-        ...
+    ) -> HasShape | Tuple[HasShape, ...]: ...
 
     @dim_binding_scope
     def __call__(
@@ -198,7 +189,7 @@ class Parser:
             tensor_type_pairs = (tensor_type_pairs,)  # type: ignore
 
         pairs = cast(
-            Tuple[Tuple[HasShape, Type[HasShape]], ...], _to_tuple(tensor_type_pairs)
+            Tuple[Tuple[HasShape, Type[HasShape]], ...], _to_tuple(tensor_type_pairs)  # type: ignore
         )
 
         out: List[HasShape] = []

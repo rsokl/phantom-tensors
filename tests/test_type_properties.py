@@ -29,7 +29,7 @@ def test_literals_can_check_by_identity(a: Tuple[int, ...], b: Tuple[int, ...]):
 
 
 def test_literal_hashes_consistently():
-    assert {Literal[1]: 1}[Literal[1]] == 1
+    assert {Literal[1]: 1}[Literal[1]] == 1  # type: ignore
     assert hash(Literal[1, 2]) == hash(Literal[1, 2])
 
 

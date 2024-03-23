@@ -13,6 +13,7 @@ from tests.arrlike import arr
 
 T = TypeVar("T")
 Ts = TypeVarTuple("Ts")
+
 A = NewType("A", int)
 B = NewType("B", int)
 C = NewType("C", int)
@@ -29,28 +30,28 @@ def test_parse_error_msg():
         ParseError,
         match=re.escape("shape-(2, 1) doesn't match shape-type ([...], A=2, A=2)"),
     ):
-        parse(arr(2, 1), Array[U[Ts], A, A])
+        parse(arr(2, 1), Array[U[Ts], A, A])  # type: ignore
 
 
 @pytest.mark.parametrize(
     "tensor_type_pairs",
     [
         # (arr(), Array[()]),
-        (arr(), Array[U[Ts]]),
+        (arr(), Array[U[Ts]]),  # type: ignore
         (arr(2), Array[A]),
         (arr(2), Array[int]),
         (arr(2), Array[Any]),
-        (arr(2), Array[U[Ts]]),
-        (arr(2), Array[U[Ts], A]),
-        (arr(2), Array[A, U[Ts]]),
+        (arr(2), Array[U[Ts]]),  # type: ignore
+        (arr(2), Array[U[Ts], A]),  # type: ignore
+        (arr(2), Array[A, U[Ts]]),  # type: ignore
         (arr(2, 2), Array[A, A]),
-        (arr(2, 2), Array[U[Ts], A, A]),
-        (arr(2, 2), Array[A, U[Ts], A]),
-        (arr(2, 2), Array[A, A, U[Ts]]),
-        (arr(1, 3, 2, 2), Array[U[Ts], A, A]),
-        (arr(2, 1, 3, 2), Array[A, U[Ts], A]),
-        (arr(2, 2, 1, 3), Array[A, A, U[Ts]]),
-        (arr(1, 2, 1, 3, 2), Array[A, B, U[Ts], B]),
+        (arr(2, 2), Array[U[Ts], A, A]),  # type: ignore
+        (arr(2, 2), Array[A, U[Ts], A]),  # type: ignore
+        (arr(2, 2), Array[A, A, U[Ts]]),  # type: ignore
+        (arr(1, 3, 2, 2), Array[U[Ts], A, A]),  # type: ignore
+        (arr(2, 1, 3, 2), Array[A, U[Ts], A]),  # type: ignore
+        (arr(2, 2, 1, 3), Array[A, A, U[Ts]]),  # type: ignore
+        (arr(1, 2, 1, 3, 2), Array[A, B, U[Ts], B]),  # type: ignore
         (arr(1, 2, 3), Array[Any, Any, Any]),
         (arr(1, 2, 3), Array[int, int, int]),
         (arr(2, 1, 2), Array[A, B, A]),
@@ -64,12 +65,12 @@ def test_parse_error_msg():
         (arr(1, 2), Array[L[1], L[2]]),
         (arr(1, 2, 1), Array[L[1], L[2], L[1]]),
         param((arr(), Array[int]), marks=parse_xfail),
-        param((arr(), Array[int, U[Ts]]), marks=parse_xfail),
+        param((arr(), Array[int, U[Ts]]), marks=parse_xfail),  # type: ignore
         param((arr(2), Array[int, int]), marks=parse_xfail),
         param((arr(2, 4), Array[A, A]), marks=parse_xfail),
         param((arr(2, 1, 1), Array[A, B, A]), marks=parse_xfail),
         param((arr(1, 1, 2), Array[A, A, A]), marks=parse_xfail),
-        param((arr(2, 1, 1), Array[A, U[Ts], A]), marks=parse_xfail),
+        param((arr(2, 1, 1), Array[A, U[Ts], A]), marks=parse_xfail),  # type: ignore
         param((arr(1), Array[A, B, C]), marks=parse_xfail),
         param(((arr(2, 4), Array[A, A]),), marks=parse_xfail),
         param(
@@ -157,7 +158,7 @@ AStr = NewType("AStr", str)
         Array[AStr],
         Array[str],
         Array[int, str],
-        Array[U[Ts], str],
+        Array[U[Ts], str],  # type: ignore
     ],
 )
 def test_bad_type_validation(bad_type):

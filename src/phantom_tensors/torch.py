@@ -19,8 +19,7 @@ __all__ = ["Tensor"]
 Shape = _te.TypeVarTuple("Shape")
 
 
-class _NewMeta(CustomInstanceCheck, type(_Tensor)):
-    ...
+class _NewMeta(CustomInstanceCheck, type(_Tensor)): ...
 
 
 class Tensor(Generic[_te.Unpack[Shape]], _Tensor):

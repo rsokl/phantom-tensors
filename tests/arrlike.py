@@ -10,8 +10,7 @@ class ImplementsArray:
     def shape(self) -> Tuple[int, ...]:
         return self._shape
 
-    def __array__(self) -> Any:
-        ...
+    def __array__(self) -> Any: ...
 
 
 def arr(*shape: int) -> ImplementsArray:
