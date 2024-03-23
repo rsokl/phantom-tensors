@@ -5,6 +5,9 @@
   <a href="https://pypi.python.org/pypi/phantom-tensors">
     <img src="https://img.shields.io/pypi/v/phantom-tensors.svg" alt="PyPI" />
   </a>
+  <a>
+    <img src="https://img.shields.io/badge/python-3.8%20&#8208;%203.12-blue.svg" alt="Python version support" />
+  </a>
 </p>
 
 
