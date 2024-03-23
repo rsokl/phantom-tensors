@@ -232,11 +232,12 @@ ParseError: shape-(3,) doesn't match shape-type (B=2,)
 #### Support for `Literal` dimensions:
 
 ```python
+from typing import Literal as L
+
 from phantom_tensors import parse
 from phantom_tensors.torch import Tensor
 
 import torch as tr
-from typing_extensions import Literal as L
 
 parse(tr.zeros(1, 3), Tensor[L[1], L[3]])  # static + runtime: OK
 parse(tr.zeros(2, 3), Tensor[L[1], L[3]])  #  # Runtime: ParseError - mismatch at dim 0

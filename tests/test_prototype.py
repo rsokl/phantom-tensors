@@ -1,9 +1,9 @@
 import re
-from typing import Any, NewType, TypeVar
+from typing import Any, Literal as L, NewType, TypeVar
 
 import pytest
 from pytest import param
-from typing_extensions import Literal as L, TypeVarTuple, Unpack as U
+from typing_extensions import TypeVarTuple, Unpack as U
 
 import phantom_tensors
 from phantom_tensors import dim_binding_scope, parse

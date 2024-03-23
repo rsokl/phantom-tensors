@@ -183,7 +183,7 @@ deps =
        numpy
        phantom-types
 
-commands = pyright tests/ src/ --pythonversion=3.8
+commands = pyright tests/ src/ --pythonversion=3.8 -p pyrightconfig_py38.json
            pyright tests/ src/ --pythonversion=3.9
            pyright tests/ src/ --pythonversion=3.10
            pyright tests/ src/ --pythonversion=3.11

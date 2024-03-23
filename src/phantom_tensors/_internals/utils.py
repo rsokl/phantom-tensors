@@ -1,9 +1,9 @@
 # pyright: strict
 
 import abc
-from typing import Any, Tuple, Type
+from typing import Any, Literal, Tuple, Type
 
-from typing_extensions import Literal, Protocol, TypeGuard, TypeVarTuple, Unpack
+from typing_extensions import Protocol, TypeGuard, TypeVarTuple, Unpack
 
 _Ts = TypeVarTuple("_Ts")
 
