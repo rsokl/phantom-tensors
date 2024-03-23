@@ -9,9 +9,9 @@ from beartype.roar import (
     BeartypeCallHintParamViolation,
     BeartypeCallHintReturnViolation,
 )
-from phantom import Phantom
 from typing_extensions import TypeVarTuple, Unpack as U
 
+from phantom import Phantom
 from phantom_tensors import dim_binding_scope, parse
 from phantom_tensors.alphabet import A, B, C
 from phantom_tensors.array import SupportsArray as Array
@@ -24,16 +24,13 @@ T = TypeVar("T")
 Ts = TypeVarTuple("Ts")
 
 
-class One_to_Three(int, Phantom, predicate=lambda x: 0 < x < 4):
-    ...
+class One_to_Three(int, Phantom, predicate=lambda x: 0 < x < 4): ...
 
 
-class Ten_or_Eleven(int, Phantom, predicate=lambda x: 10 <= x <= 11):
-    ...
+class Ten_or_Eleven(int, Phantom, predicate=lambda x: 10 <= x <= 11): ...
 
 
-class EvenOnly(int, Phantom, predicate=lambda x: x % 2 == 0):
-    ...
+class EvenOnly(int, Phantom, predicate=lambda x: x % 2 == 0): ...
 
 
 NewOneToThree = NewType("NewOneToThree", One_to_Three)
@@ -65,10 +62,10 @@ def test_Tensor():
         (arr(10, 2, 10), Array[One_to_Three, int, Ten_or_Eleven]),
         (arr(10, 2, 10), Array[NewOneToThree, int, Ten_or_Eleven]),
         (arr(2, 2, 8), Array[NewOneToThree, int, Ten_or_Eleven]),
-        (arr(0, 10), Array[One_to_Three, U[Ts], Ten_or_Eleven]),
-        (arr(2, 2, 0), Array[One_to_Three, U[Ts], Ten_or_Eleven]),
-        (arr(2, 0, 0, 0), Array[One_to_Three, U[Ts], Ten_or_Eleven]),
-        (arr(0, 0, 2, 0), Array[U[Ts], One_to_Three, Ten_or_Eleven]),
+        (arr(0, 10), Array[One_to_Three, U[Ts], Ten_or_Eleven]),  # type: ignore
+        (arr(2, 2, 0), Array[One_to_Three, U[Ts], Ten_or_Eleven]),  # type: ignore
+        (arr(2, 0, 0, 0), Array[One_to_Three, U[Ts], Ten_or_Eleven]),  # type: ignore
+        (arr(0, 0, 2, 0), Array[U[Ts], One_to_Three, Ten_or_Eleven]),  # type: ignore
     ],
 )
 def test_parse_inconsistent_types(tensor_type_pairs):
@@ -124,8 +121,7 @@ def test_runtime_checking_with_beartype():
         return cast(Tensor[A, C], tr.ones(a, c))
 
     @beartype
-    def needs_vector(x: Tensor[int]):
-        ...
+    def needs_vector(x: Tensor[int]): ...
 
     x, y = parse(
         (tr.ones(3, 4), Tensor[A, B]),
@@ -182,11 +178,11 @@ def test_isinstance_works():
     "tensor_type_pairs",
     [
         (arr(2, 2, 10), Array[One_to_Three, int, Ten_or_Eleven]),
-        (arr(2, 10), Array[One_to_Three, U[Ts], Ten_or_Eleven]),
-        (arr(2, 2, 10), Array[One_to_Three, U[Ts], Ten_or_Eleven]),
-        (arr(2, 0, 0, 10), Array[One_to_Three, U[Ts], Ten_or_Eleven]),
+        (arr(2, 10), Array[One_to_Three, U[Ts], Ten_or_Eleven]),  # type: ignore
+        (arr(2, 2, 10), Array[One_to_Three, U[Ts], Ten_or_Eleven]),  # type: ignore
+        (arr(2, 0, 0, 10), Array[One_to_Three, U[Ts], Ten_or_Eleven]),  # type: ignore
         (arr(2, 2, 10), Array[NewOneToThree, int, Ten_or_Eleven]),
-        (arr(0, 0, 2, 11), Array[U[Ts], One_to_Three, Ten_or_Eleven]),
+        (arr(0, 0, 2, 11), Array[U[Ts], One_to_Three, Ten_or_Eleven]),  # type: ignore
     ],
 )
 def test_parse_consistent_types(tensor_type_pairs):

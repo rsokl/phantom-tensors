@@ -110,14 +110,11 @@ def check_readme2():
     from phantom_tensors.alphabet import A, B  # these are just NewType(..., int) types
     from phantom_tensors.numpy import NDArray
 
-    def func_on_2d(x: NDArray[Any, Any]):
-        ...
+    def func_on_2d(x: NDArray[Any, Any]): ...
 
-    def func_on_3d(x: NDArray[Any, Any, Any]):
-        ...
+    def func_on_3d(x: NDArray[Any, Any, Any]): ...
 
-    def func_on_any_arr(x: np.ndarray[Any, Any]):
-        ...
+    def func_on_any_arr(x: np.ndarray[Any, Any]): ...
 
     if sys.version_info < (3, 8):
         return
@@ -203,11 +200,9 @@ def check_readme4():
     assert_type(t2, Tensor[B])
     assert_type(w, Tensor[A])
 
-    def vanilla_numpy(x: np.ndarray[Any, Any]):
-        ...
+    def vanilla_numpy(x: np.ndarray[Any, Any]): ...
 
-    def vanilla_torch(x: tr.Tensor):
-        ...
+    def vanilla_torch(x: tr.Tensor): ...
 
     vanilla_numpy(arr)  # type checker: OK
     vanilla_torch(t1)  # type checker: OK
@@ -218,13 +213,12 @@ def check_phantom_example():
     from typing import Any
 
     import torch as tr
-    from phantom import Phantom
 
+    from phantom import Phantom
     from phantom_tensors import parse
     from phantom_tensors.torch import Tensor
 
-    class EvenOnly(int, Phantom[Any], predicate=lambda x: x % 2 == 0):
-        ...
+    class EvenOnly(int, Phantom[Any], predicate=lambda x: x % 2 == 0): ...
 
     assert_type(parse(tr.ones(1, 0), Tensor[int, EvenOnly]), Tensor[int, EvenOnly])
     assert_type(parse(tr.ones(1, 2), Tensor[int, EvenOnly]), Tensor[int, EvenOnly])
@@ -255,8 +249,7 @@ def check_beartype_example():
         return parse(tr.rand(a, c), Tensor[A, C])
 
     @beartype
-    def needs_vector(x: Tensor[Any]):
-        ...
+    def needs_vector(x: Tensor[Any]): ...
 
     x, y = parse(
         (tr.rand(3, 4), Tensor[A, B]),

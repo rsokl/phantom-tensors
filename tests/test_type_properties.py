@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 import sys
-from typing import Tuple
+from typing import Literal, Tuple
 
 import pytest
 from hypothesis import assume, given
-from typing_extensions import Literal
 
 
 @pytest.mark.xfail(
@@ -15,9 +14,6 @@ def test_literal_singlet_tuple_same_as_scalar():
     assert Literal[(1,)] is Literal[1]  # type: ignore
 
 
-@pytest.mark.xfail(
-    sys.version_info < (3, 8), reason="Literal identity introduced in 3.8"
-)
 @given(...)
 def test_literals_can_check_by_identity(a: Tuple[int, ...], b: Tuple[int, ...]):
     assume(len(a))
@@ -29,7 +25,7 @@ def test_literals_can_check_by_identity(a: Tuple[int, ...], b: Tuple[int, ...]):
 
 
 def test_literal_hashes_consistently():
-    assert {Literal[1]: 1}[Literal[1]] == 1
+    assert {Literal[1]: 1}[Literal[1]] == 1  # type: ignore
     assert hash(Literal[1, 2]) == hash(Literal[1, 2])
 
 

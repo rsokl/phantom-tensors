@@ -5,6 +5,9 @@
   <a href="https://pypi.python.org/pypi/phantom-tensors">
     <img src="https://img.shields.io/pypi/v/phantom-tensors.svg" alt="PyPI" />
   </a>
+  <a>
+    <img src="https://img.shields.io/badge/python-3.8%20&#8208;%203.12-blue.svg" alt="Python version support" />
+  </a>
 </p>
 
 
@@ -232,11 +235,12 @@ ParseError: shape-(3,) doesn't match shape-type (B=2,)
 #### Support for `Literal` dimensions:
 
 ```python
+from typing import Literal as L
+
 from phantom_tensors import parse
 from phantom_tensors.torch import Tensor
 
 import torch as tr
-from typing_extensions import Literal as L
 
 parse(tr.zeros(1, 3), Tensor[L[1], L[3]])  # static + runtime: OK
 parse(tr.zeros(2, 3), Tensor[L[1], L[3]])  #  # Runtime: ParseError - mismatch at dim 0

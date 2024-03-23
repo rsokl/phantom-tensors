@@ -10,9 +10,9 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "phantom_tensors"
 dynamic = ["version"]
-description = "Configurable, reproducible, and scalable workflows in Python, via Hydra"
+description = "Tensor-like types – with variadic shapes – that support both static and runtime type checking, and convenient parsing."
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 dependencies = ["typing-extensions >= 4.1.0"]
 license = { text = "MIT" }
 keywords = [
@@ -37,11 +37,11 @@ classifiers = [
        "License :: OSI Approved :: MIT License",
        "Operating System :: OS Independent",
        "Intended Audience :: Science/Research",
-       "Programming Language :: Python :: 3.7",
        "Programming Language :: Python :: 3.8",
        "Programming Language :: Python :: 3.9",
        "Programming Language :: Python :: 3.10",
        "Programming Language :: Python :: 3.11",
+       "Programming Language :: Python :: 3.12",
        "Topic :: Scientific/Engineering",
        "Programming Language :: Python :: 3 :: Only",
 ]
@@ -121,15 +121,15 @@ skip = 'docs/build/*'
 legacy_tox_ini = """
 [tox]
 isolated_build = True
-envlist = py37, py38, py39, py310, py311
+envlist = py38, py39, py310, py311, py312
 
 [gh-actions]
 python =
-  3.7: py37
   3.8: py38
   3.9: py39
   3.10: py310
   3.11: py311
+  3.12: py312
 
 [testenv]
 description = Runs test suite parallelized in the specified python enviornment and 
@@ -162,7 +162,7 @@ commands = pytest --cov-report term-missing --cov-config=pyproject.toml --cov-fa
 description = Runs test suite against optional 3rd party packages that phantom-tensors 
               provides specialized support for.
 install_command = pip install --upgrade --upgrade-strategy eager {opts} {packages}
-basepython = python3.9
+basepython = python3.11
 deps = {[testenv]deps}
        beartype
        torch
@@ -175,7 +175,7 @@ description = Ensure that phantom-tensors's source code and test suite scan clea
               under pyright, and that phantom-tensors's public API has a 100 prcnt
               type-completeness score.
 usedevelop = true
-basepython = python3.10
+basepython = python3.11
 deps = 
        --requirement deps/requirements-pyright.txt
        beartype
@@ -183,10 +183,11 @@ deps =
        numpy
        phantom-types
 
-commands = pyright --lib tests/ src/ --pythonversion=3.8
-           pyright --lib tests/ src/ --pythonversion=3.9
-           pyright --lib tests/ src/ --pythonversion=3.10
-           pyright --lib tests/ src/ --pythonversion=3.11
+commands = pyright tests/ src/ --pythonversion=3.8 -p pyrightconfig_py38.json
+           pyright tests/ src/ --pythonversion=3.9
+           pyright tests/ src/ --pythonversion=3.10
+           pyright tests/ src/ --pythonversion=3.11
+           pyright tests/ src/ --pythonversion=3.12
            pyright --ignoreexternal --verifytypes phantom_tensors
 
 
@@ -209,7 +210,7 @@ commands =
 description = Ensures that source materials code and docs and test suite adhere to 
               formatting and code-quality standards.
 skip_install=true
-basepython=python3.9
+basepython=python3.11
 deps=black
      isort
      flake8

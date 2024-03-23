@@ -1,9 +1,9 @@
 # pyright: strict
 
 import abc
-from typing import Any, Tuple, Type
+from typing import Any, Literal, Tuple, Type
 
-from typing_extensions import Literal, Protocol, TypeGuard, TypeVarTuple, Unpack
+from typing_extensions import Protocol, TypeGuard, TypeVarTuple, Unpack
 
 _Ts = TypeVarTuple("_Ts")
 
@@ -20,22 +20,20 @@ class NewTypeLike(Protocol):
     __name__: str
     __supertype__: Type[Any]
 
-    def __call__(self, x: Any) -> int:
-        ...
+    def __call__(self, x: Any) -> int: ...
 
 
 class NewTypeInt(Protocol):
     __name__: str
     __supertype__: Type[int]
 
-    def __call__(self, x: Any) -> int:
-        ...
+    def __call__(self, x: Any) -> int: ...
 
 
 class UnpackLike(Protocol):
     _inst: Literal[True]
     _name: Literal[None]
-    __origin__: Type[Any] = Unpack
+    __origin__: Type[Any] = Unpack  # type: ignore
     __args__: Tuple[TypeVarTuple]
     __parameters__: Tuple[TypeVarTuple]
     __module__: str
@@ -44,7 +42,7 @@ class UnpackLike(Protocol):
 class LiteralLike(Protocol):
     _inst: Literal[True]
     _name: Literal[None]
-    __origin__: Type[Any] = Literal
+    __origin__: Type[Any] = Literal  # type: ignore
     __args__: Tuple[Any, ...]
     __parameters__: Tuple[()]
     __module__: str
