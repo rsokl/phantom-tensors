@@ -49,7 +49,7 @@ jobs:
         pip install tox tox-gh-actions
     - name: Cache tox environments
       id: cache-third-party
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: .tox
         key: tox-third-party-${{ hashFiles('setup.cfg') }}-${{ hashFiles('setup.py') }}-${{ hashFiles('tests/conftest.py') }}-${{ hashFiles('.github/workflows/tox.yml') }}
@@ -70,7 +70,7 @@ jobs:
         pip install tox tox-gh-actions
     - name: Cache tox environments
       id: cache-third-party
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: .tox
         key: tox-third-party-${{ hashFiles('pyproject.toml') }}-${{ hashFiles('setup.py') }}-${{ hashFiles('.github/workflows/tox.yml') }}
