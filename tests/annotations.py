@@ -131,7 +131,7 @@ def check_readme3():
     from typing import TypeVar, cast
 
     import torch as tr
-    from beartype import beartype  # type: ignore
+    from beartype import beartype
 
     from phantom_tensors import dim_binding_scope
     from phantom_tensors.alphabet import A, B, C
@@ -231,7 +231,7 @@ def check_beartype_example():
     from typing import Any
 
     import pytest
-    from beartype import beartype  # type: ignore
+    from beartype import beartype
     from typing_extensions import assert_type
 
     from phantom_tensors import dim_binding_scope, parse
