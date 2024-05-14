@@ -43,7 +43,6 @@ class DimBindContext:
         self._tokens[self._depth] = bindings.set(b)
 
     def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
-        print(f"{bindings.get()=}")
         if self._depth == 1:
             bindings.reset(self._tokens.pop(self._depth))
         self._depth -= 1
@@ -180,7 +179,6 @@ def check(shape_type: Tuple[ShapeDimType, ...], shape: Tuple[int, ...]) -> bool:
                     return False
                 _bindings[symbol] = actual_val
                 expected_val = actual_val
-        print(f"{_bindings=}")
         if not all(expected_val == shape[index] for index in indices):
             return False
 

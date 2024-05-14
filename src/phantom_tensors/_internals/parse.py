@@ -205,7 +205,6 @@ class Parser:
             if not check(type_shape, tensor.shape):
                 _bindings = bindings.get()
                 assert _bindings is not None
-                print(_bindings)
                 type_str = ", ".join(
                     (
                         f"{getattr(p, '__name__', repr(p))}={_bindings.get(p, '?')}"
