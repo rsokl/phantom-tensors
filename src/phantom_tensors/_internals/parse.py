@@ -7,7 +7,7 @@ from typing_extensions import ClassVar, Protocol, TypeAlias, TypeVarTuple
 
 from phantom_tensors._internals import utils as _utils
 from phantom_tensors._internals.dim_binding import (
-    DimBinder,
+    bindings,
     ShapeDimType,
     check,
     dim_binding_scope,
@@ -203,10 +203,12 @@ class Parser:
                 raise ParseError(f"Expected {expected_type}, got: {type(tensor)}")
 
             if not check(type_shape, tensor.shape):
-                assert DimBinder.bindings is not None
+                _bindings = bindings.get()
+                assert _bindings is not None
+                print(_bindings)
                 type_str = ", ".join(
                     (
-                        f"{getattr(p, '__name__', repr(p))}={DimBinder.bindings.get(p, '?')}"
+                        f"{getattr(p, '__name__', repr(p))}={_bindings.get(p, '?')}"
                         if not _utils.is_typevar_unpack(p)
                         else "[...]"
                     )

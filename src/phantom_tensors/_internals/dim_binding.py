@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from contextvars import ContextVar, Token
 from functools import wraps
 from typing import Any, Callable, Iterable, Optional, Tuple, Type, TypeVar, Union, cast
 
@@ -25,22 +26,28 @@ LiteralCheck: TypeAlias = Callable[[Any, Iterable[Any]], bool]
 F = TypeVar("F", bound=Callable[..., Any])
 
 
-class DimBinder:
-    bindings: Optional[dict[Any, int]] = None
+bindings: ContextVar[Optional[dict[Any, int]]] = ContextVar("bindings", default=None)
 
 
 class DimBindContext:
-    _depth: int = 0
+    __slots__ = ("_tokens", "_depth")
+
+    def __init__(self) -> None:
+        self._tokens: dict[int, Token[Optional[dict[Any, int]]]] = {}
+        self._depth: int = 0
 
     def __enter__(self) -> None:
+        b = bindings.get()
         self._depth += 1
-        if self._depth == 1:
-            DimBinder.bindings = {}
+        b = {} if b is None else b.copy()
+        self._tokens[self._depth] = bindings.set(b)
+
 
     def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        print(f"{bindings.get()=}")
+        if self._depth == 1:
+            bindings.reset(self._tokens.pop(self._depth))
         self._depth -= 1
-        if self._depth == 0:
-            DimBinder.bindings = None
 
     def __call__(self, func: F) -> F:
         @wraps(func)
@@ -154,7 +161,7 @@ def check(shape_type: Tuple[ShapeDimType, ...], shape: Tuple[int, ...]) -> bool:
         #      vs. shape: (1,)  # should have at least 2 dim
         return False
 
-    _bindings = DimBinder.bindings
+    _bindings = bindings.get()
 
     for symbol, indices in bound_symbols.items():
         validation_fn = validators.get(symbol, None)
@@ -174,7 +181,7 @@ def check(shape_type: Tuple[ShapeDimType, ...], shape: Tuple[int, ...]) -> bool:
                     return False
                 _bindings[symbol] = actual_val
                 expected_val = actual_val
-
+        print(f"{_bindings=}")
         if not all(expected_val == shape[index] for index in indices):
             return False
 
