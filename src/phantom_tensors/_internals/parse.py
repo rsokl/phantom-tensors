@@ -7,8 +7,8 @@ from typing_extensions import ClassVar, Protocol, TypeAlias, TypeVarTuple
 
 from phantom_tensors._internals import utils as _utils
 from phantom_tensors._internals.dim_binding import (
-    bindings,
     ShapeDimType,
+    bindings,
     check,
     dim_binding_scope,
 )

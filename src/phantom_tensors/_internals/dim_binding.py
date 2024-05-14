@@ -42,7 +42,6 @@ class DimBindContext:
         b = {} if b is None else b.copy()
         self._tokens[self._depth] = bindings.set(b)
 
-
     def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         print(f"{bindings.get()=}")
         if self._depth == 1:
