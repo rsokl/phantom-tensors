@@ -6,7 +6,7 @@ from contextvars import ContextVar, Token
 from functools import wraps
 from typing import Any, Callable, Iterable, Optional, Tuple, Type, TypeVar, Union, cast
 
-from typing_extensions import Final, TypeAlias
+from typing_extensions import TypeAlias
 
 import phantom_tensors._internals.utils as _utils
 from phantom_tensors._internals.utils import LiteralLike, NewTypeLike, UnpackLike
@@ -92,7 +92,7 @@ def check(shape_type: Tuple[ShapeDimType, ...], shape: Tuple[int, ...]) -> bool:
 
         # if variadic tuple is present, need to use negative indexing to reference
         # location from the end of the tuple
-        CURRENT_INDEX: Final = n if var_field_ind is None else n - len(shape_type)
+        CURRENT_INDEX = n if var_field_ind is None else n - len(shape_type)
 
         # The following symbols bind to dimensions (by symbol-reference)
         # Some of them may also carry with them additional validation checks,

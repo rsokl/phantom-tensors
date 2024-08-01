@@ -77,15 +77,10 @@ def check_bad_tensor_parse(x: tr.Tensor):
 
 
 def check_readme_blurb_one():
-    from typing import NewType
-
     import numpy as np
 
     from phantom_tensors import parse
     from phantom_tensors.numpy import NDArray
-
-    A = NewType("A", int)
-    B = NewType("B", int)
 
     # runtime: checks that shapes (2, 3) and (3, 2)
     #          match (A, B) and (B, A) pattern
